@@ -1,3 +1,4 @@
+@file:Suppress("UNUSED_VALUE")
 package com.example.huariquehub_mobile.ui.screens.subscription
 
 import androidx.compose.foundation.background
