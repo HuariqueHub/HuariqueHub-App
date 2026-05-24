@@ -20,11 +20,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.huariquehub_mobile.data.model.UserRole
 import com.example.huariquehub_mobile.ui.theme.*
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit,
+    onRegisterSuccess: (role: UserRole) -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
@@ -204,7 +205,8 @@ fun RegisterScreen(
                                     errorMessage = "La contraseña debe tener al menos 8 caracteres"
                                 else -> {
                                     isLoading = true
-                                    onRegisterSuccess()
+                                    val role = if (selectedRole == "owner") UserRole.OWNER else UserRole.CONSUMER
+                                    onRegisterSuccess(role)
                                 }
                             }
                         },

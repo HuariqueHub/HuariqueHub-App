@@ -11,10 +11,15 @@ data class Huarique(
     val description: String,
     val phone: String,
     val hours: String,
+    val price: Float = 0f,
     val imageUrl: String = "",
     val isFavorite: Boolean = false,
     val latitude: Double = 0.0,
-    val longitude: Double = 0.0
+    val longitude: Double = 0.0,
+    val ownerId: Int? = null,
+    val deliveryAvailable: Boolean = false,
+    val takeawayAvailable: Boolean = false,
+    val dineInAvailable: Boolean = true
 )
 
 val sampleHuariques = listOf(

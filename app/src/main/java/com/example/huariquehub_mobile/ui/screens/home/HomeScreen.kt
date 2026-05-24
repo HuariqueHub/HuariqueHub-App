@@ -28,7 +28,8 @@ import com.example.huariquehub_mobile.ui.theme.*
 @Composable
 fun HomeScreen(
     onHuariqueClick: (Int) -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    userRole: UserRole = UserRole.CONSUMER
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todas") }
@@ -137,6 +138,34 @@ fun HomeScreen(
                 }
             }
 
+            // Banner propietario
+            if (userRole == UserRole.OWNER) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = BrownDark)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🏪", fontSize = 28.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Eres propietario", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = SurfaceColor)
+                                Text("Gestiona tus locales y promos", fontSize = 12.sp, color = SurfaceColor.copy(alpha = 0.75f))
+                            }
+                            TextButton(onClick = onProfileClick) {
+                                Text("Mi panel", color = OrangeDark, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            }
+
             // Categorías
             item {
                 Column(modifier = Modifier.padding(top = 8.dp)) {
@@ -215,7 +244,7 @@ fun HomeScreen(
 
 @Composable
 fun CategoryChip(
-    category: com.example.huariquehub_mobile.data.model.Category,
+    category: Category,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -244,7 +273,7 @@ fun CategoryChip(
 
 @Composable
 fun HuariqueCard(
-    huarique: com.example.huariquehub_mobile.data.model.Huarique,
+    huarique: Huarique,
     onClick: () -> Unit
 ) {
     var isFav by remember { mutableStateOf(huarique.isFavorite) }
