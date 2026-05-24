@@ -20,7 +20,7 @@ import com.example.huariquehub_mobile.data.model.samplePromos
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("UNUSED_PARAMETER", "ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+@Suppress("UNUSED_PARAMETER", "UNUSED_VALUE")
 @Composable
 fun OwnerPromosScreen(
     ownerId: Int,

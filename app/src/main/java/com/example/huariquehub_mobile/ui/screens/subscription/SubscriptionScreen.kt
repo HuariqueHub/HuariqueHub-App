@@ -23,7 +23,7 @@ import com.example.huariquehub_mobile.data.model.sampleSubscriptions
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+@Suppress("UNUSED_VALUE")
 @Composable
 fun SubscriptionScreen(
     userId: Int,

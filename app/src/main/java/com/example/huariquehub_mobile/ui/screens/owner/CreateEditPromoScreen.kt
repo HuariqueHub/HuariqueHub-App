@@ -68,7 +68,7 @@ private val promoTypes = listOf(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+@Suppress("UNUSED_VALUE")
 @Composable
 fun CreateEditPromoScreen(
     promoId: Int? = null,

@@ -21,7 +21,7 @@ import com.example.huariquehub_mobile.data.model.sampleHuariques
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+@Suppress("UNUSED_VALUE")
 @Composable
 fun OwnerDashboardScreen(
     ownerId: Int,
