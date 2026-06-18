@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.*
 import com.example.huariquehub_mobile.ui.theme.*
 
@@ -29,20 +30,19 @@ import com.example.huariquehub_mobile.ui.theme.*
 fun HomeScreen(
     onHuariqueClick: (Int) -> Unit,
     onProfileClick: () -> Unit,
-    userRole: UserRole = UserRole.CONSUMER
+    userRole: UserRole = UserRole.CONSUMER,
+    viewModel: HomeViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todas") }
 
-    val filteredHuariques = remember(searchQuery, selectedCategory) {
-        sampleHuariques.filter { huarique ->
-            val matchesSearch = searchQuery.isEmpty() ||
-                huarique.name.contains(searchQuery, ignoreCase = true) ||
-                huarique.district.contains(searchQuery, ignoreCase = true) ||
-                huarique.category.contains(searchQuery, ignoreCase = true)
-            val matchesCategory = selectedCategory == "Todas" || huarique.category == selectedCategory
-            matchesSearch && matchesCategory
-        }
+    val filteredHuariques = viewModel.huariques.filter { huarique ->
+        val matchesSearch = searchQuery.isEmpty() ||
+            huarique.name.contains(searchQuery, ignoreCase = true) ||
+            huarique.district.contains(searchQuery, ignoreCase = true) ||
+            huarique.category.contains(searchQuery, ignoreCase = true)
+        val matchesCategory = selectedCategory == "Todas" || huarique.category == selectedCategory
+        matchesSearch && matchesCategory
     }
 
     Scaffold(
@@ -180,7 +180,7 @@ fun HomeScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(sampleCategories) { category ->
+                        items(viewModel.categories) { category ->
                             CategoryChip(
                                 category = category,
                                 selected = selectedCategory == category.name,
@@ -214,28 +214,60 @@ fun HomeScreen(
             }
 
             // Lista de huariques
-            if (filteredHuariques.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("🔍", fontSize = 48.sp)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("No encontramos huariques", fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("Intenta con otra búsqueda", color = TextSecondary, fontSize = 13.sp)
+            when {
+                viewModel.isLoading && viewModel.huariques.isEmpty() -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = OrangePrimary)
                         }
                     }
                 }
-            } else {
-                items(filteredHuariques) { huarique ->
-                    HuariqueCard(
-                        huarique = huarique,
-                        onClick = { onHuariqueClick(huarique.id) }
-                    )
+                viewModel.error != null && viewModel.huariques.isEmpty() -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("⚠️", fontSize = 48.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(viewModel.error ?: "", color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = { viewModel.load() },
+                                    colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
+                                ) { Text("Reintentar") }
+                            }
+                        }
+                    }
+                }
+                filteredHuariques.isEmpty() -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("🔍", fontSize = 48.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("No encontramos huariques", fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                                Text("Intenta con otra búsqueda", color = TextSecondary, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    items(filteredHuariques) { huarique ->
+                        HuariqueCard(
+                            huarique = huarique,
+                            onClick = { onHuariqueClick(huarique.id) }
+                        )
+                    }
                 }
             }
         }

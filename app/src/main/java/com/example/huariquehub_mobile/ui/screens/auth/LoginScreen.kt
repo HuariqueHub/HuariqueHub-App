@@ -25,18 +25,22 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onLoginSuccess: (UserSession) -> Unit,
+    onNavigateToRegister: () -> Unit,
+    viewModel: AuthViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    var validationError by remember { mutableStateOf("") }
+    val isLoading = viewModel.isLoading
+    val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
 
     Box(
         modifier = Modifier
@@ -109,7 +113,7 @@ fun LoginScreen(
                     // Campo email
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it; errorMessage = "" },
+                        onValueChange = { email = it; validationError = ""; viewModel.clearError() },
                         label = { Text("Correo electrónico") },
                         leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = OrangePrimary) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -128,7 +132,7 @@ fun LoginScreen(
                     // Campo contraseña
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; errorMessage = "" },
+                        onValueChange = { password = it; validationError = ""; viewModel.clearError() },
                         label = { Text("Contraseña") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = OrangePrimary) },
                         trailingIcon = {
@@ -177,10 +181,10 @@ fun LoginScreen(
                     Button(
                         onClick = {
                             if (email.isBlank() || password.isBlank()) {
-                                errorMessage = "Por favor completa todos los campos"
+                                validationError = "Por favor completa todos los campos"
                             } else {
-                                isLoading = true
-                                onLoginSuccess()
+                                validationError = ""
+                                viewModel.login(email, password) { onLoginSuccess(it) }
                             }
                         },
                         modifier = Modifier

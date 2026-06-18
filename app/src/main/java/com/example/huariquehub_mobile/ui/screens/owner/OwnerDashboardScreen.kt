@@ -17,12 +17,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.Huarique
-import com.example.huariquehub_mobile.data.model.sampleHuariques
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("UNUSED_VALUE")
 @Composable
 fun OwnerDashboardScreen(
     ownerId: Int,
@@ -30,13 +30,16 @@ fun OwnerDashboardScreen(
     onAddHuarique: () -> Unit,
     onEditHuarique: (Int) -> Unit,
     onManagePromos: () -> Unit = {},
-    onSubscription: () -> Unit = {}
+    onSubscription: () -> Unit = {},
+    viewModel: OwnerDashboardViewModel = viewModel()
 ) {
-    // Filtra huariques del propietario (mock por ahora)
-    var ownerHuariques by remember {
-        mutableStateOf(sampleHuariques.filter { it.ownerId == ownerId }
-            .ifEmpty { sampleHuariques.take(2) })
+    // Recarga los locales del propietario al entrar y al volver de crear/editar.
+    LifecycleResumeEffect(ownerId) {
+        viewModel.load(ownerId)
+        onPauseOrDispose { }
     }
+
+    val ownerHuariques = viewModel.huariques
     var showDeleteDialog by remember { mutableStateOf<Huarique?>(null) }
 
     Scaffold(
@@ -200,7 +203,7 @@ fun OwnerDashboardScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        ownerHuariques = ownerHuariques.filter { it.id != huarique.id }
+                        viewModel.delete(huarique.id)
                         showDeleteDialog = null
                     }
                 ) {

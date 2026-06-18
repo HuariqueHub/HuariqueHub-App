@@ -1,0 +1,53 @@
+package com.example.huariquehub_mobile.data.remote.dto
+
+/** Cuerpos de petición (request bodies) para la API de PuntoSabor. */
+
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
+data class CreateUserRequest(
+    val name: String,
+    val email: String,
+    val password: String,
+    val role: String
+)
+
+data class CreateHuariqueRequest(
+    val name: String,
+    val category: String,
+    val categoryId: Int,
+    val price: Double,
+    val district: String,
+    val address: String? = null,
+    val phone: String? = null,
+    val description: String? = null,
+    val ownerId: Int? = null
+)
+
+data class CreateReviewRequest(
+    val huariqueId: Int,
+    val userId: Int,
+    val rating: Int,
+    val comment: String
+)
+
+data class CreatePromoRequest(
+    val title: String,
+    val note: String,
+    val huariqueId: Int? = null,
+    val type: String = "otro",
+    val discount: Int = 0,
+    val code: String? = null,
+    val startDate: String? = null,
+    val endDate: String? = null,
+    val maxUses: Int? = null,
+    val imageUrl: String? = null
+)
+
+data class CreateSubscriptionRequest(
+    val userId: Int,
+    val planId: String,
+    val endDate: String? = null
+)
