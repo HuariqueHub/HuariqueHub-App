@@ -45,8 +45,8 @@ fun AppNavigation() {
 
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginSuccess = {
-                    session = UserSession(role = UserRole.CONSUMER)
+                onLoginSuccess = { loggedSession ->
+                    session = loggedSession
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
@@ -57,8 +57,8 @@ fun AppNavigation() {
 
         composable(Routes.REGISTER) {
             RegisterScreen(
-                onRegisterSuccess = { role ->
-                    session = UserSession(role = role)
+                onRegisterSuccess = { newSession ->
+                    session = newSession
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }

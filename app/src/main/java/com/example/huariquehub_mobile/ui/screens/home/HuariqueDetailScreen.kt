@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.*
 import com.example.huariquehub_mobile.ui.theme.*
 
@@ -26,12 +27,52 @@ import com.example.huariquehub_mobile.ui.theme.*
 @Composable
 fun HuariqueDetailScreen(
     huariqueId: Int,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: HuariqueDetailViewModel = viewModel()
 ) {
-    val huarique = sampleHuariques.find { it.id == huariqueId } ?: sampleHuariques.first()
-    val reviews = remember { getReviewsForHuarique(huariqueId) }
-    var isFav by remember { mutableStateOf(huarique.isFavorite) }
+    LaunchedEffect(huariqueId) { viewModel.load(huariqueId) }
+
+    val huarique = viewModel.huarique
+    val reviews = viewModel.reviews
+    var isFav by remember { mutableStateOf(false) }
     var showReviewDialog by remember { mutableStateOf(false) }
+
+    if (huarique == null) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Cargando...", color = SurfaceColor) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = SurfaceColor)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = OrangePrimary)
+                )
+            }
+        ) { padding ->
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding).background(WarmWhite),
+                contentAlignment = Alignment.Center
+            ) {
+                if (viewModel.error != null) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⚠️", fontSize = 44.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(viewModel.error ?: "", color = TextPrimary)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel.load(huariqueId) },
+                            colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
+                        ) { Text("Reintentar") }
+                    }
+                } else {
+                    CircularProgressIndicator(color = OrangePrimary)
+                }
+            }
+        }
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -252,7 +293,11 @@ fun HuariqueDetailScreen(
     if (showReviewDialog) {
         NewReviewDialog(
             onDismiss = { showReviewDialog = false },
-            onSubmit = { _, _ -> showReviewDialog = false }
+            onSubmit = { rating, comment ->
+                viewModel.submitReview(huariqueId, rating.toInt(), comment) {
+                    showReviewDialog = false
+                }
+            }
         )
     }
 }

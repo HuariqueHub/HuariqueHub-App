@@ -18,22 +18,21 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.Plan
-import com.example.huariquehub_mobile.data.model.samplePlans
-import com.example.huariquehub_mobile.data.model.sampleSubscriptions
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("UNUSED_VALUE")
 @Composable
 fun SubscriptionScreen(
     userId: Int,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: SubscriptionViewModel = viewModel()
 ) {
-    val activeSub = remember(userId) {
-        sampleSubscriptions.firstOrNull { it.userId == userId && it.isActive }
-    }
-    var selectedPlanId by remember { mutableStateOf(activeSub?.planId ?: "basic") }
+    LaunchedEffect(userId) { viewModel.load(userId) }
+    val activeSub = viewModel.activeSub
+    var selectedPlanId by remember { mutableStateOf("basic") }
+    LaunchedEffect(activeSub) { activeSub?.planId?.let { selectedPlanId = it } }
     var showConfirmDialog by remember { mutableStateOf<Plan?>(null) }
 
     Scaffold(
@@ -134,7 +133,7 @@ fun SubscriptionScreen(
             }
 
             // Plan cards
-            items(samplePlans) { plan ->
+            items(viewModel.plans) { plan ->
                 PlanCard(
                     plan = plan,
                     isCurrentPlan = activeSub?.planId == plan.id,
@@ -146,11 +145,11 @@ fun SubscriptionScreen(
             // CTA button
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                val target = samplePlans.first { it.id == selectedPlanId }
+                val target = viewModel.plans.firstOrNull { it.id == selectedPlanId }
                 val isSamePlan = activeSub?.planId == selectedPlanId
 
                 Button(
-                    onClick = { if (!isSamePlan) showConfirmDialog = target },
+                    onClick = { if (!isSamePlan && target != null) showConfirmDialog = target },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -160,12 +159,15 @@ fun SubscriptionScreen(
                         containerColor = if (isSamePlan) DividerWarm else OrangePrimary,
                         contentColor = if (isSamePlan) TextSecondary else SurfaceColor
                     ),
-                    enabled = !isSamePlan
+                    enabled = !isSamePlan && target != null
                 ) {
                     Text(
-                        if (isSamePlan) "Este es tu plan actual"
-                        else if (target.price == 0f) "Suscribirme gratis"
-                        else "Suscribirme — S/ %.0f/mes".format(target.price),
+                        when {
+                            isSamePlan -> "Este es tu plan actual"
+                            target == null -> "Cargando planes..."
+                            target.price == 0f -> "Suscribirme gratis"
+                            else -> "Suscribirme — S/ %.0f/mes".format(target.price)
+                        },
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -200,7 +202,7 @@ fun SubscriptionScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    // TODO(backend): POST /subscriptions
+                    viewModel.subscribe(userId, plan.id) { }
                     showConfirmDialog = null
                 }) {
                     Text("Confirmar", color = OrangePrimary, fontWeight = FontWeight.SemiBold)

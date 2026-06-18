@@ -21,12 +21,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.huariquehub_mobile.data.model.UserRole
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: (role: UserRole) -> Unit,
-    onNavigateToLogin: () -> Unit
+    onRegisterSuccess: (UserSession) -> Unit,
+    onNavigateToLogin: () -> Unit,
+    viewModel: AuthViewModel = viewModel()
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -34,8 +37,9 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var selectedRole by remember { mutableStateOf("consumer") }
-    var errorMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf("") }
+    val isLoading = viewModel.isLoading
+    val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
 
     Box(
         modifier = Modifier
@@ -110,7 +114,7 @@ fun RegisterScreen(
                     // Nombre
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it; errorMessage = "" },
+                        onValueChange = { name = it; validationError = ""; viewModel.clearError() },
                         label = { Text("Nombre completo") },
                         leadingIcon = { Icon(Icons.Default.Person, null, tint = OrangePrimary) },
                         singleLine = true,
@@ -127,7 +131,7 @@ fun RegisterScreen(
                     // Email
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it; errorMessage = "" },
+                        onValueChange = { email = it; validationError = ""; viewModel.clearError() },
                         label = { Text("Correo electrónico") },
                         leadingIcon = { Icon(Icons.Default.Email, null, tint = OrangePrimary) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -145,7 +149,7 @@ fun RegisterScreen(
                     // Contraseña
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; errorMessage = "" },
+                        onValueChange = { password = it; validationError = ""; viewModel.clearError() },
                         label = { Text("Contraseña") },
                         leadingIcon = { Icon(Icons.Default.Lock, null, tint = OrangePrimary) },
                         trailingIcon = {
@@ -172,7 +176,7 @@ fun RegisterScreen(
                     // Confirmar contraseña
                     OutlinedTextField(
                         value = confirmPassword,
-                        onValueChange = { confirmPassword = it; errorMessage = "" },
+                        onValueChange = { confirmPassword = it; validationError = ""; viewModel.clearError() },
                         label = { Text("Confirmar contraseña") },
                         leadingIcon = { Icon(Icons.Default.Lock, null, tint = OrangePrimary) },
                         visualTransformation = PasswordVisualTransformation(),
@@ -198,15 +202,15 @@ fun RegisterScreen(
                         onClick = {
                             when {
                                 name.isBlank() || email.isBlank() || password.isBlank() ->
-                                    errorMessage = "Completa todos los campos"
+                                    validationError = "Completa todos los campos"
                                 password != confirmPassword ->
-                                    errorMessage = "Las contraseñas no coinciden"
+                                    validationError = "Las contraseñas no coinciden"
                                 password.length < 8 ->
-                                    errorMessage = "La contraseña debe tener al menos 8 caracteres"
+                                    validationError = "La contraseña debe tener al menos 8 caracteres"
                                 else -> {
-                                    isLoading = true
+                                    validationError = ""
                                     val role = if (selectedRole == "owner") UserRole.OWNER else UserRole.CONSUMER
-                                    onRegisterSuccess(role)
+                                    viewModel.register(name, email, password, role) { onRegisterSuccess(it) }
                                 }
                             }
                         },

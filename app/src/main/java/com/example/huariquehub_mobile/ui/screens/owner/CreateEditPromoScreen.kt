@@ -16,8 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.huariquehub_mobile.data.model.sampleHuariques
-import com.example.huariquehub_mobile.data.model.samplePromos
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.ui.theme.*
 
 // ── Shared helpers (mirrored from CreateEditHuariqueScreen — file-private scope) ──
@@ -69,36 +68,51 @@ private val promoTypes = listOf(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("UNUSED_VALUE")
 @Composable
 fun CreateEditPromoScreen(
     promoId: Int? = null,
     ownerId: Int = 0,
     onBack: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    viewModel: CreateEditPromoViewModel = viewModel()
 ) {
     val isEditing = promoId != null
-    val existing  = remember(promoId) { promoId?.let { id -> samplePromos.find { it.id == id } } }
+    LaunchedEffect(promoId, ownerId) { viewModel.init(promoId, ownerId) }
+    val existing = viewModel.existing
 
-    var title    by remember { mutableStateOf(existing?.title ?: "") }
-    var note     by remember { mutableStateOf(existing?.note ?: "") }
-    var typeKey  by remember { mutableStateOf(existing?.type ?: "otro") }
-    var discount by remember { mutableStateOf(if ((existing?.discount ?: 0) > 0) existing!!.discount.toString() else "") }
-    var code     by remember { mutableStateOf(existing?.code ?: "") }
-    var startDate by remember { mutableStateOf(existing?.startDate ?: "") }
-    var endDate  by remember { mutableStateOf(existing?.endDate ?: "") }
-    var maxUses  by remember { mutableStateOf(existing?.maxUses?.toString() ?: "") }
+    var title    by remember { mutableStateOf("") }
+    var note     by remember { mutableStateOf("") }
+    var typeKey  by remember { mutableStateOf("otro") }
+    var discount by remember { mutableStateOf("") }
+    var code     by remember { mutableStateOf("") }
+    var startDate by remember { mutableStateOf("") }
+    var endDate  by remember { mutableStateOf("") }
+    var maxUses  by remember { mutableStateOf("") }
 
-    var selectedHuariqueId by remember { mutableStateOf(existing?.huariqueId) }
+    var selectedHuariqueId by remember { mutableStateOf<Int?>(null) }
 
     var expandedType by remember { mutableStateOf(false) }
     var expandedHuarique by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-    var isSaving by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf("") }
+    val isSaving = viewModel.isSaving
+    val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
 
-    val ownerHuariques = remember(ownerId) {
-        sampleHuariques.filter { it.ownerId == ownerId }.ifEmpty { sampleHuariques.take(2) }
+    // Prefill al cargar la promo existente (modo edición).
+    LaunchedEffect(existing) {
+        existing?.let {
+            title = it.title
+            note = it.note
+            typeKey = it.type
+            discount = if (it.discount > 0) it.discount.toString() else ""
+            code = it.code ?: ""
+            startDate = it.startDate ?: ""
+            endDate = it.endDate ?: ""
+            maxUses = it.maxUses?.toString() ?: ""
+            selectedHuariqueId = it.huariqueId
+        }
     }
+
+    val ownerHuariques = viewModel.ownerHuariques
     val selectedType = promoTypes.first { it.key == typeKey }
     val showDiscount = typeKey == "descuento" || typeKey == "2x1"
 
@@ -137,7 +151,7 @@ fun CreateEditPromoScreen(
             FormField(label = "Título de la promo *") {
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it; errorMessage = "" },
+                    onValueChange = { title = it; validationError = "" },
                     placeholder = { Text("Ej. 2×1 Pollo Hoy") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -183,7 +197,7 @@ fun CreateEditPromoScreen(
             FormField(label = "Descripción / nota *") {
                 OutlinedTextField(
                     value = note,
-                    onValueChange = { note = it; errorMessage = "" },
+                    onValueChange = { note = it; validationError = "" },
                     placeholder = { Text("Ej. Solo Lun–Vie de 12:00 a 16:00") },
                     minLines = 2,
                     maxLines = 4,
@@ -320,12 +334,18 @@ fun CreateEditPromoScreen(
             Button(
                 onClick = {
                     when {
-                        title.isBlank() -> errorMessage = "El título es obligatorio."
-                        note.isBlank()  -> errorMessage = "La descripción es obligatoria."
+                        title.isBlank() -> validationError = "El título es obligatorio."
+                        note.isBlank()  -> validationError = "La descripción es obligatoria."
                         else -> {
-                            isSaving = true
-                            // TODO(backend): POST /promos con los campos mapeados
-                            onSave()
+                            validationError = ""
+                            viewModel.save(
+                                id = promoId,
+                                title = title,
+                                note = note,
+                                typeKey = typeKey,
+                                discountText = discount,
+                                huariqueId = selectedHuariqueId
+                            ) { onSave() }
                         }
                     }
                 },

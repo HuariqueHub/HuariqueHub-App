@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.huariquehub_mobile.data.model.sampleHuariques
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,27 +24,46 @@ import com.example.huariquehub_mobile.ui.theme.*
 fun CreateEditHuariqueScreen(
     huariqueId: Int? = null,
     onBack: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    viewModel: CreateEditHuariqueViewModel = viewModel()
 ) {
     val isEditing = huariqueId != null
-    val existing = remember(huariqueId) { huariqueId?.let { id -> sampleHuariques.find { it.id == id } } }
+    LaunchedEffect(huariqueId) { viewModel.init(huariqueId) }
+    val existing = viewModel.existing
 
-    var name by remember { mutableStateOf(existing?.name ?: "") }
-    var category by remember { mutableStateOf(existing?.category ?: "") }
-    var district by remember { mutableStateOf(existing?.district ?: "") }
-    var address by remember { mutableStateOf(existing?.address ?: "") }
-    var phone by remember { mutableStateOf(existing?.phone ?: "") }
-    var price by remember { mutableStateOf(if ((existing?.price ?: 0f) > 0) existing!!.price.toString() else "") }
+    var name by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("") }
+    var district by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
     var openAt by remember { mutableStateOf("") }
     var closeAt by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf(existing?.description ?: "") }
-    var delivery by remember { mutableStateOf(existing?.deliveryAvailable ?: false) }
-    var takeaway by remember { mutableStateOf(existing?.takeawayAvailable ?: false) }
-    var dineIn by remember { mutableStateOf(existing?.dineInAvailable ?: true) }
-    var errorMessage by remember { mutableStateOf("") }
-    var isSaving by remember { mutableStateOf(false) }
+    var description by remember { mutableStateOf("") }
+    var delivery by remember { mutableStateOf(false) }
+    var takeaway by remember { mutableStateOf(false) }
+    var dineIn by remember { mutableStateOf(true) }
+    var validationError by remember { mutableStateOf("") }
+    val isSaving = viewModel.isSaving
+    val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
 
-    val categories = listOf("Pollo", "Marina", "Criolla", "Chifa", "Postres", "Menú", "Café", "Parrillas")
+    // Prefill al cargar el huarique existente (modo edición).
+    LaunchedEffect(existing) {
+        existing?.let {
+            name = it.name
+            category = it.category
+            district = it.district
+            address = it.address
+            phone = it.phone
+            price = if (it.price > 0) "%.0f".format(it.price) else ""
+            description = it.description
+            delivery = it.deliveryAvailable
+            takeaway = it.takeawayAvailable
+            dineIn = it.dineInAvailable
+        }
+    }
+
+    val categories = viewModel.categoryNames
     var expandedCategory by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -82,7 +101,7 @@ fun CreateEditHuariqueScreen(
             FormField(label = "Nombre del local *") {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it; errorMessage = "" },
+                    onValueChange = { name = it; validationError = "" },
                     placeholder = { Text("Ej. El Brasero de Don Lucho") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -237,13 +256,20 @@ fun CreateEditHuariqueScreen(
             Button(
                 onClick = {
                     when {
-                        name.isBlank() -> errorMessage = "El nombre es obligatorio."
-                        category.isBlank() -> errorMessage = "Selecciona una categoría."
-                        district.isBlank() -> errorMessage = "El distrito es obligatorio."
+                        name.isBlank() -> validationError = "El nombre es obligatorio."
+                        category.isBlank() -> validationError = "Selecciona una categoría."
+                        district.isBlank() -> validationError = "El distrito es obligatorio."
                         else -> {
-                            isSaving = true
-                            // Al conectar el backend: llamar POST/PATCH /huariques aquí
-                            onSave()
+                            validationError = ""
+                            viewModel.save(
+                                id = huariqueId,
+                                name = name,
+                                category = category,
+                                district = district,
+                                address = address,
+                                priceText = price,
+                                description = description
+                            ) { onSave() }
                         }
                     }
                 },

@@ -16,20 +16,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.Promo
-import com.example.huariquehub_mobile.data.model.samplePromos
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("UNUSED_PARAMETER", "UNUSED_VALUE")
 @Composable
 fun OwnerPromosScreen(
     ownerId: Int,
     onBack: () -> Unit,
     onAddPromo: () -> Unit,
-    onEditPromo: (Int) -> Unit = {}
+    onEditPromo: (Int) -> Unit = {},
+    viewModel: OwnerPromosViewModel = viewModel()
 ) {
-    var ownerPromos by remember { mutableStateOf(samplePromos) }
+    LifecycleResumeEffect(ownerId) {
+        viewModel.load(ownerId)
+        onPauseOrDispose { }
+    }
+
+    val ownerPromos = viewModel.promos
     var showDeleteDialog by remember { mutableStateOf<Promo?>(null) }
 
     Scaffold(
@@ -91,7 +97,7 @@ fun OwnerPromosScreen(
             text = { Text("¿Eliminar \"${promo.title}\"?") },
             confirmButton = {
                 TextButton(onClick = {
-                    ownerPromos = ownerPromos.filter { it.id != promo.id }
+                    viewModel.delete(promo.id)
                     showDeleteDialog = null
                 }) {
                     Text("Eliminar", color = ErrorRed, fontWeight = FontWeight.SemiBold)
