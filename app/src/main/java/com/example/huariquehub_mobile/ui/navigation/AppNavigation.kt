@@ -22,6 +22,10 @@ import com.example.huariquehub_mobile.ui.screens.owner.OwnerDashboardScreen
 import com.example.huariquehub_mobile.ui.screens.owner.OwnerPromosScreen
 import com.example.huariquehub_mobile.ui.screens.subscription.SubscriptionScreen
 
+// rutas de autenticación
+// rutas del explorador
+// rutas del propietario
+
 object Routes {
     const val LOGIN            = "login"
     const val REGISTER         = "register"
