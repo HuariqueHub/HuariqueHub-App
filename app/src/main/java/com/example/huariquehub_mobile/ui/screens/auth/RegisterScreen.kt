@@ -28,6 +28,9 @@ import com.example.huariquehub_mobile.R
 import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
 
+
+// selector de rol para consumer u owner
+// validación de contraseñas antes del registro
 private val RegisterBackground = Color(0xFFD4E8A0)
 
 @Composable
