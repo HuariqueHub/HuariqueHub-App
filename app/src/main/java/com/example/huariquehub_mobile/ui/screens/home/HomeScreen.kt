@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.*
+import com.example.huariquehub_mobile.ui.components.HuariqueImage
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -433,17 +434,17 @@ fun HuariqueCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
-            // Imagen placeholder
+            // Imagen del huarique (con fallback a emoji)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .background(
-                        Brush.horizontalGradient(colors = listOf(OrangeLight, YellowGreen.copy(alpha = 0.5f)))
-                    ),
-                contentAlignment = Alignment.Center
             ) {
-                Text("🍽️", fontSize = 56.sp)
+                HuariqueImage(
+                    url = huarique.imageUrl,
+                    modifier = Modifier.fillMaxSize(),
+                    emojiSize = 56.sp
+                )
                 // Badge categoría
                 Surface(
                     modifier = Modifier

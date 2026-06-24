@@ -9,8 +9,10 @@ import com.example.huariquehub_mobile.data.model.Huarique
 import com.example.huariquehub_mobile.data.model.Review
 import com.example.huariquehub_mobile.data.remote.SessionManager
 import com.example.huariquehub_mobile.data.remote.toUserMessage
+import com.example.huariquehub_mobile.data.model.Promo
 import com.example.huariquehub_mobile.data.repository.FavoriteRepository
 import com.example.huariquehub_mobile.data.repository.HuariqueRepository
+import com.example.huariquehub_mobile.data.repository.MembershipRepository
 import com.example.huariquehub_mobile.data.repository.ReportRepository
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,10 @@ class HuariqueDetailViewModel : ViewModel() {
     private val repo = HuariqueRepository()
     private val favoritesRepo = FavoriteRepository()
     private val reportRepo = ReportRepository()
+    private val membershipRepo = MembershipRepository()
+
+    var promos by mutableStateOf<List<Promo>>(emptyList())
+        private set
 
     var huarique by mutableStateOf<Huarique?>(null)
         private set
@@ -47,6 +53,17 @@ class HuariqueDetailViewModel : ViewModel() {
             }.onFailure { error = it.toUserMessage() }
             isLoading = false
             loadFavoriteState(id)
+            promos = runCatching { membershipRepo.getPromosByHuarique(id) }
+                .getOrDefault(emptyList())
+        }
+    }
+
+    /** Canjea una promoción del huarique (US26). */
+    fun usePromo(promo: Promo) {
+        viewModelScope.launch {
+            runCatching { membershipRepo.usePromo(promo.id) }
+                .onSuccess { feedback = "¡Promoción \"${promo.title}\" canjeada!" }
+                .onFailure { feedback = it.toUserMessage() }
         }
     }
 

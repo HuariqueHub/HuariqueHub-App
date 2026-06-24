@@ -1,5 +1,8 @@
 package com.example.huariquehub_mobile.ui.screens.home
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,11 +12,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -21,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.*
+import com.example.huariquehub_mobile.ui.components.HuariqueImage
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +38,7 @@ fun HuariqueDetailScreen(
 ) {
     LaunchedEffect(huariqueId) { viewModel.load(huariqueId) }
 
+    val context = LocalContext.current
     val huarique = viewModel.huarique
     val reviews = viewModel.reviews
     var showReviewDialog by remember { mutableStateOf(false) }
@@ -100,7 +107,7 @@ fun HuariqueDetailScreen(
                             tint = if (viewModel.isFavorite) ErrorRed else SurfaceColor
                         )
                     }
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { shareHuarique(context, huarique) }) {
                         Icon(Icons.Default.Share, null, tint = SurfaceColor)
                     }
                 },
@@ -125,18 +132,18 @@ fun HuariqueDetailScreen(
                 .background(WarmWhite),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            // Imagen hero
+            // Imagen hero (con fallback a emoji)
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(220.dp)
-                        .background(
-                            Brush.horizontalGradient(colors = listOf(OrangeLight, YellowGreen.copy(alpha = 0.6f)))
-                        ),
-                    contentAlignment = Alignment.Center
                 ) {
-                    Text("🍽️", fontSize = 80.sp)
+                    HuariqueImage(
+                        url = huarique.imageUrl,
+                        modifier = Modifier.fillMaxSize(),
+                        emojiSize = 80.sp
+                    )
                     // Badge rating
                     Surface(
                         modifier = Modifier
@@ -252,7 +259,8 @@ fun HuariqueDetailScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             OutlinedButton(
-                                onClick = {},
+                                onClick = { dialPhone(context, huarique.phone) },
+                                enabled = huarique.phone.isNotBlank(),
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = OrangePrimary),
@@ -262,16 +270,29 @@ fun HuariqueDetailScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("Llamar", fontSize = 13.sp)
                             }
-                            Button(
-                                onClick = {},
+                            OutlinedButton(
+                                onClick = { openWhatsApp(context, huarique.phone, huarique.name) },
+                                enabled = huarique.phone.isNotBlank(),
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = OrangePrimary),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, OrangePrimary)
                             ) {
-                                Icon(Icons.Default.Map, null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.AutoMirrored.Filled.Chat, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Ver mapa", fontSize = 13.sp)
+                                Text("WhatsApp", fontSize = 13.sp)
                             }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { openMap(context, huarique) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
+                        ) {
+                            Icon(Icons.Default.Map, null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Ver en el mapa", fontSize = 13.sp)
                         }
 
                         // Reportar información incorrecta (US21)
@@ -282,6 +303,58 @@ fun HuariqueDetailScreen(
                             Icon(Icons.Default.Flag, null, modifier = Modifier.size(16.dp), tint = TextSecondary)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Reportar información", fontSize = 12.sp, color = TextSecondary)
+                        }
+                    }
+                }
+            }
+
+            // Promociones del huarique (US26 lado cliente)
+            if (viewModel.promos.isNotEmpty()) {
+                item {
+                    Text(
+                        "Promociones",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = BrownDark,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+                items(viewModel.promos) { promo ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(OrangeLight),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    if (promo.discount > 0) "-${promo.discount}%" else "🎁",
+                                    color = OrangePrimary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(promo.title, fontWeight = FontWeight.SemiBold, color = BrownDark, fontSize = 15.sp)
+                                if (promo.note.isNotBlank())
+                                    Text(promo.note, color = TextSecondary, fontSize = 12.sp)
+                            }
+                            TextButton(onClick = { viewModel.usePromo(promo) }) {
+                                Text("Canjear", color = OrangePrimary, fontWeight = FontWeight.SemiBold)
+                            }
                         }
                     }
                 }
@@ -359,6 +432,44 @@ fun HuariqueDetailScreen(
             }
         )
     }
+}
+
+// ── Acciones del detalle (llamar, WhatsApp, mapa, compartir) ────────────────
+private fun dialPhone(context: Context, phone: String) {
+    if (phone.isBlank()) return
+    runCatching {
+        context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
+    }
+}
+
+private fun openWhatsApp(context: Context, phone: String, name: String) {
+    val digits = phone.filter { it.isDigit() }
+    if (digits.isEmpty()) return
+    val text = Uri.encode("Hola, te encontré en PuntoSabor ($name).")
+    runCatching {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$digits?text=$text"))
+        )
+    }
+}
+
+private fun openMap(context: Context, h: com.example.huariquehub_mobile.data.model.Huarique) {
+    val uri = if (h.latitude != 0.0 || h.longitude != 0.0) {
+        Uri.parse("geo:${h.latitude},${h.longitude}?q=${h.latitude},${h.longitude}(${Uri.encode(h.name)})")
+    } else {
+        Uri.parse("geo:0,0?q=${Uri.encode("${h.address}, ${h.district}")}")
+    }
+    runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+}
+
+private fun shareHuarique(context: Context, h: com.example.huariquehub_mobile.data.model.Huarique?) {
+    if (h == null) return
+    val text = "¡Mira este huarique en PuntoSabor! ${h.name} (${h.category} · ${h.district})"
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    runCatching { context.startActivity(Intent.createChooser(send, "Compartir")) }
 }
 
 @Composable

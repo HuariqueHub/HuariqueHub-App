@@ -73,4 +73,15 @@ class SubscriptionViewModel : ViewModel() {
     }
 
     fun dismissReceipt() { receipt = null }
+
+    /** Cancela la suscripción activa. */
+    fun cancel(onDone: () -> Unit) {
+        val subId = activeSub?.id ?: return
+        viewModelScope.launch {
+            error = null
+            runCatching { repo.cancelSubscription(subId) }
+                .onSuccess { activeSub = null; onDone() }
+                .onFailure { error = it.toUserMessage() }
+        }
+    }
 }

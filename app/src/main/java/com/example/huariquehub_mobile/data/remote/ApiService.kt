@@ -102,6 +102,9 @@ interface ApiService {
     @DELETE("promos/{id}")
     suspend fun deletePromo(@Path("id") id: Int): Response<Unit>
 
+    @POST("promos/{id}/use")
+    suspend fun usePromo(@Path("id") id: Int): Response<PromoDto>
+
     // ── Subscriptions ───────────────────────────────────────────────────────
     @GET("subscriptions/active")
     suspend fun getActiveSubscription(@Query("userId") userId: Int): Response<SubscriptionDto>
@@ -111,6 +114,9 @@ interface ApiService {
 
     @GET("subscriptions/{id}/receipt")
     suspend fun getReceipt(@Path("id") id: Int): ReceiptDto
+
+    @POST("subscriptions/{id}/cancel")
+    suspend fun cancelSubscription(@Path("id") id: Int): Response<Unit>
 
     // ── Preferences (US17/US11) ─────────────────────────────────────────────
     @GET("preferences")

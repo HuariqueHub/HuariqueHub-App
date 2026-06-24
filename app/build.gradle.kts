@@ -56,6 +56,9 @@ dependencies {
     // Mapa in-app con marcadores (US02): osmdroid usa tiles de OpenStreetMap (sin API key)
     implementation("org.osmdroid:osmdroid-android:6.1.20")
 
+    // Carga de imágenes remotas (imageUrl) en Compose
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
     // Red: Retrofit + Moshi + OkHttp
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.moshi)

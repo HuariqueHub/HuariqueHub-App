@@ -35,6 +35,8 @@ fun SubscriptionScreen(
     var selectedPlanId by remember { mutableStateOf("basic") }
     LaunchedEffect(activeSub) { activeSub?.planId?.let { selectedPlanId = it } }
     var showConfirmDialog by remember { mutableStateOf<Plan?>(null) }
+    var showPaymentFor by remember { mutableStateOf<Plan?>(null) }
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -173,7 +175,13 @@ fun SubscriptionScreen(
                 val isSamePlan = activeSub?.planId == selectedPlanId
 
                 Button(
-                    onClick = { if (!isSamePlan && target != null) showConfirmDialog = target },
+                    onClick = {
+                        if (!isSamePlan && target != null) {
+                            // Plan pago → formulario de pago simulado; gratis → confirmación directa.
+                            if (target.price > 0f) showPaymentFor = target
+                            else showConfirmDialog = target
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -201,7 +209,7 @@ fun SubscriptionScreen(
                 if (activeSub != null && activeSub.planId != "basic") {
                     Spacer(modifier = Modifier.height(12.dp))
                     TextButton(
-                        onClick = { /* TODO(backend): POST /subscriptions/{id}/cancel */ },
+                        onClick = { showCancelDialog = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Cancelar suscripción", color = ErrorRed, fontSize = 13.sp)
@@ -235,6 +243,38 @@ fun SubscriptionScreen(
             dismissButton = {
                 TextButton(onClick = { showConfirmDialog = null }) {
                     Text("Cancelar", color = TextSecondary)
+                }
+            }
+        )
+    }
+
+    // Formulario de pago simulado (US24)
+    showPaymentFor?.let { plan ->
+        PaymentDialog(
+            plan = plan,
+            onDismiss = { showPaymentFor = null },
+            onPay = {
+                viewModel.subscribe(userId, plan.id) { }
+                showPaymentFor = null
+            }
+        )
+    }
+
+    // Confirmar cancelación
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text("Cancelar suscripción") },
+            text = { Text("¿Seguro que quieres cancelar tu suscripción actual?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.cancel { }
+                    showCancelDialog = false
+                }) { Text("Sí, cancelar", color = ErrorRed) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelDialog = false }) {
+                    Text("No", color = TextSecondary)
                 }
             }
         )
@@ -274,6 +314,76 @@ private fun ReceiptRow(label: String, value: String) {
         Text(label, fontSize = 13.sp, color = TextSecondary)
         Text(value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = BrownDark)
     }
+}
+
+@Composable
+private fun PaymentDialog(
+    plan: Plan,
+    onDismiss: () -> Unit,
+    onPay: () -> Unit
+) {
+    var number by remember { mutableStateOf("") }
+    var expiry by remember { mutableStateOf("") }
+    var cvv by remember { mutableStateOf("") }
+
+    val numberOk = number.filter { it.isDigit() }.length == 16
+    val expiryOk = Regex("^\\d{2}/\\d{2}$").matches(expiry)
+    val cvvOk = cvv.length in 3..4 && cvv.all { it.isDigit() }
+    val valid = numberOk && expiryOk && cvvOk
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Pago de membresía", fontWeight = FontWeight.Bold, color = BrownDark) },
+        text = {
+            Column {
+                Text(
+                    "Plan ${plan.name} — S/ %.0f/mes".format(plan.price),
+                    color = TextSecondary, fontSize = 13.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = number,
+                    onValueChange = { if (it.length <= 19) number = it },
+                    label = { Text("Número de tarjeta") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Row {
+                    OutlinedTextField(
+                        value = expiry,
+                        onValueChange = { if (it.length <= 5) expiry = it },
+                        label = { Text("MM/AA") },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = cvv,
+                        onValueChange = { if (it.length <= 4) cvv = it },
+                        label = { Text("CVV") },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("Pago simulado para fines de demostración.",
+                    color = TextSecondary, fontSize = 11.sp)
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onPay,
+                enabled = valid,
+                colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+                shape = RoundedCornerShape(10.dp)
+            ) { Text("Pagar S/ %.0f".format(plan.price)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar", color = TextSecondary) }
+        },
+        containerColor = SurfaceColor
+    )
 }
 
 @Composable

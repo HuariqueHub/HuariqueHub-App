@@ -209,8 +209,24 @@ class MembershipRepository {
     suspend fun getReceipt(subscriptionId: Int): Receipt =
         api.getReceipt(subscriptionId).toModel()
 
+    /** Cancela una suscripción activa. */
+    suspend fun cancelSubscription(id: Int) {
+        val response = api.cancelSubscription(id)
+        if (!response.isSuccessful) throw retrofit2.HttpException(response)
+    }
+
     suspend fun getPromosByOwner(ownerId: Int): List<Promo> =
         api.getPromos(ownerId = ownerId).map { it.toModel() }
+
+    /** Promos activas de un huarique para mostrar al cliente (US26). */
+    suspend fun getPromosByHuarique(huariqueId: Int): List<Promo> =
+        api.getPromos(huariqueId = huariqueId).map { it.toModel() }.filter { it.isActive }
+
+    /** Canjea una promoción incrementando su contador de usos. */
+    suspend fun usePromo(id: Int) {
+        val response = api.usePromo(id)
+        if (!response.isSuccessful) throw retrofit2.HttpException(response)
+    }
 
     suspend fun getPromo(id: Int): Promo =
         api.getPromo(id).toModel()
