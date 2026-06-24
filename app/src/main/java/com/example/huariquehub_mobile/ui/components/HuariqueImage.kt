@@ -44,7 +44,7 @@ private val huariqueImageMap: Map<String, Int> = mapOf(
 
 /**
  * Imagen de un huarique. Primero busca por nombre en el mapa local de drawables.
- * Si no encuentra, intenta cargar desde url. Si tampoco, muestra placeholder.
+ * Si no encuentra, intenta cargar desde url. Si tampoco, muestra placeholder. Asi aseguramos una experiencia consistente.
  */
 @Composable
 fun HuariqueImage(
