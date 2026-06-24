@@ -16,7 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,8 +26,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.huariquehub_mobile.R
 import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
+
+// fondo verde claro del diseño original
+private val LoginBackground = Color(0xFFD4E8A0)
 
 @Composable
 fun LoginScreen(
@@ -46,11 +50,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(OrangePrimary, BrownMedium, BrownDark)
-                )
-            )
+            .background(LoginBackground)
     ) {
         Column(
             modifier = Modifier
@@ -58,36 +58,23 @@ fun LoginScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header con logo
             Spacer(modifier = Modifier.height(64.dp))
-            Text(
-                text = "🍽️",
-                fontSize = 64.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "PuntoSabor",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = SurfaceColor,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Descubre los mejores huariques",
-                fontSize = 14.sp,
-                color = SurfaceColor.copy(alpha = 0.8f),
-                textAlign = TextAlign.Center
+
+            // logo imagen en vez de emoji
+            Image(
+                painter = painterResource(id = R.drawable.logo_puntosabor),
+                contentDescription = "PuntoSabor logo",
+                modifier = Modifier.size(160.dp)
             )
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Card con el formulario
+            // card con el formulario
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceColor),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
@@ -111,7 +98,7 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Campo email
+                    // campo email
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it; validationError = ""; viewModel.clearError() },
@@ -130,7 +117,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Campo contraseña
+                    // campo contraseña
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it; validationError = ""; viewModel.clearError() },
@@ -157,7 +144,6 @@ fun LoginScreen(
                         )
                     )
 
-                    // Error
                     if (errorMessage.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -178,7 +164,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Botón ingresar
+                    // botón ingresar
                     Button(
                         onClick = {
                             if (email.isBlank() || password.isBlank()) {
