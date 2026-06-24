@@ -1,5 +1,7 @@
 package com.example.huariquehub_mobile.ui.screens.home
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,6 +27,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.*
 import com.example.huariquehub_mobile.ui.components.HuariqueImage
 import com.example.huariquehub_mobile.ui.theme.*
+import com.example.huariquehub_mobile.R
+
+private val HomeBackground = Color(0xFFD4E8A0)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,9 +47,9 @@ fun HomeScreen(
 
     val filteredHuariques = viewModel.huariques.filter { huarique ->
         val matchesSearch = searchQuery.isEmpty() ||
-            huarique.name.contains(searchQuery, ignoreCase = true) ||
-            huarique.district.contains(searchQuery, ignoreCase = true) ||
-            huarique.category.contains(searchQuery, ignoreCase = true)
+                huarique.name.contains(searchQuery, ignoreCase = true) ||
+                huarique.district.contains(searchQuery, ignoreCase = true) ||
+                huarique.category.contains(searchQuery, ignoreCase = true)
         val matchesCategory = selectedCategory == "Todas" || huarique.category == selectedCategory
         val matchesFavorites = !viewModel.favoritesOnly || huarique.id in viewModel.favoriteIds
         matchesSearch && matchesCategory && matchesFavorites
@@ -54,43 +59,51 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "PuntoSabor 🍽️",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = SurfaceColor
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_puntosabor),
+                            contentDescription = "logo",
+                            modifier = Modifier.size(32.dp)
                         )
-                        Text(
-                            text = "Lima, Perú",
-                            fontSize = 12.sp,
-                            color = SurfaceColor.copy(alpha = 0.8f)
-                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "PuntoSabor",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                color = BrownDark
+                            )
+                            Text(
+                                text = "Lima, Perú",
+                                fontSize = 12.sp,
+                                color = BrownDark.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 },
                 actions = {
                     IconButton(onClick = onMapClick) {
-                        Icon(Icons.Default.Map, contentDescription = "Ver en mapa", tint = SurfaceColor)
+                        Icon(Icons.Default.Map, contentDescription = "Ver en mapa", tint = BrownDark)
                     }
                     IconButton(onClick = onNotificationsClick) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = SurfaceColor)
+                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = BrownDark)
                     }
                     IconButton(onClick = onPreferencesClick) {
-                        Icon(Icons.Default.Tune, contentDescription = "Preferencias", tint = SurfaceColor)
+                        Icon(Icons.Default.Tune, contentDescription = "Preferencias", tint = BrownDark)
                     }
                     IconButton(onClick = onProfileClick) {
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceColor.copy(alpha = 0.2f)),
+                                .background(BrownDark.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Person, contentDescription = "Perfil", tint = SurfaceColor)
+                            Icon(Icons.Default.Person, contentDescription = "Perfil", tint = BrownDark)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = OrangePrimary)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = HomeBackground)
             )
         }
     ) { innerPadding ->
@@ -101,13 +114,15 @@ fun HomeScreen(
                 .background(WarmWhite),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // Banner hero
+            // banner hero
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            Brush.verticalGradient(colors = listOf(OrangePrimary, OrangePrimary.copy(alpha = 0.0f)))
+                            Brush.verticalGradient(
+                                colors = listOf(HomeBackground, HomeBackground.copy(alpha = 0.0f))
+                            )
                         )
                         .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
@@ -115,17 +130,17 @@ fun HomeScreen(
                         Text(
                             text = "Descubre los mejores",
                             fontSize = 16.sp,
-                            color = SurfaceColor.copy(alpha = 0.9f)
+                            color = BrownDark.copy(alpha = 0.9f)
                         )
                         Text(
                             text = "Huariques cerca de ti",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = SurfaceColor
+                            color = BrownDark
                         )
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Barra de búsqueda
+                        // barra de búsqueda
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
@@ -152,7 +167,7 @@ fun HomeScreen(
                 }
             }
 
-            // Banner propietario
+            // banner propietario
             if (userRole == UserRole.OWNER) {
                 item {
                     Card(
@@ -180,7 +195,7 @@ fun HomeScreen(
                 }
             }
 
-            // Sugeridos para ti (US18)
+            // sugeridos para ti
             if (viewModel.suggestions.isNotEmpty()) {
                 item {
                     Column(modifier = Modifier.padding(top = 8.dp)) {
@@ -234,7 +249,7 @@ fun HomeScreen(
                 }
             }
 
-            // Categorías
+            // categorías
             item {
                 Column(modifier = Modifier.padding(top = 8.dp)) {
                     Text(
@@ -259,7 +274,7 @@ fun HomeScreen(
                 }
             }
 
-            // Filtros rápidos: Cerca de mí (US19) y Favoritos (US03)
+            // filtros rápidos
             item {
                 Row(
                     modifier = Modifier
@@ -301,7 +316,7 @@ fun HomeScreen(
                 }
             }
 
-            // Título resultados
+            // título resultados
             item {
                 Row(
                     modifier = Modifier
@@ -312,7 +327,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         text = if (searchQuery.isEmpty() && selectedCategory == "Todas") "Destacados 🔥"
-                               else "${filteredHuariques.size} resultados",
+                        else "${filteredHuariques.size} resultados",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = BrownDark
@@ -323,7 +338,7 @@ fun HomeScreen(
                 }
             }
 
-            // Lista de huariques
+            // lista de huariques
             when {
                 viewModel.isLoading && viewModel.huariques.isEmpty() -> {
                     item {
@@ -357,9 +372,7 @@ fun HomeScreen(
                 filteredHuariques.isEmpty() -> {
                     item {
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(40.dp),
+                            modifier = Modifier.fillMaxWidth().padding(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -434,18 +447,18 @@ fun HuariqueCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
-            // Imagen del huarique (con fallback a emoji)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
             ) {
                 HuariqueImage(
+                    name = huarique.name,
                     url = huarique.imageUrl,
                     modifier = Modifier.fillMaxSize(),
                     emojiSize = 56.sp
                 )
-                // Badge categoría
+                // badge categoría
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -461,7 +474,7 @@ fun HuariqueCard(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                // Botón favorito (US03)
+                // botón favorito
                 IconButton(
                     onClick = onToggleFavorite,
                     modifier = Modifier.align(Alignment.TopEnd)
@@ -472,7 +485,7 @@ fun HuariqueCard(
                         tint = if (isFavorite) ErrorRed else SurfaceColor
                     )
                 }
-                // Estado Abierto/Cerrado (US20/US22)
+                // estado abierto/cerrado
                 if (status != OpenStatus.UNKNOWN) {
                     Surface(
                         modifier = Modifier
