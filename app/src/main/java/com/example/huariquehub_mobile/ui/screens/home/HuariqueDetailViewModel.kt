@@ -9,12 +9,16 @@ import com.example.huariquehub_mobile.data.model.Huarique
 import com.example.huariquehub_mobile.data.model.Review
 import com.example.huariquehub_mobile.data.remote.SessionManager
 import com.example.huariquehub_mobile.data.remote.toUserMessage
+import com.example.huariquehub_mobile.data.repository.FavoriteRepository
 import com.example.huariquehub_mobile.data.repository.HuariqueRepository
+import com.example.huariquehub_mobile.data.repository.ReportRepository
 import kotlinx.coroutines.launch
 
 class HuariqueDetailViewModel : ViewModel() {
 
     private val repo = HuariqueRepository()
+    private val favoritesRepo = FavoriteRepository()
+    private val reportRepo = ReportRepository()
 
     var huarique by mutableStateOf<Huarique?>(null)
         private set
@@ -25,6 +29,8 @@ class HuariqueDetailViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
     var isSubmitting by mutableStateOf(false)
+        private set
+    var isFavorite by mutableStateOf(false)
         private set
 
     fun load(id: Int) {
@@ -40,8 +46,39 @@ class HuariqueDetailViewModel : ViewModel() {
                 reviews = r
             }.onFailure { error = it.toUserMessage() }
             isLoading = false
+            loadFavoriteState(id)
         }
     }
+
+    private fun loadFavoriteState(huariqueId: Int) {
+        val userId = SessionManager.userId ?: return
+        viewModelScope.launch {
+            runCatching { favoritesRepo.getFavoriteIds(userId) }
+                .onSuccess { isFavorite = huariqueId in it }
+        }
+    }
+
+    /** Marca/desmarca el huarique como favorito (US03), con reversión ante error. */
+    fun toggleFavorite(huariqueId: Int) {
+        val userId = SessionManager.userId ?: return
+        val wasFavorite = isFavorite
+        isFavorite = !wasFavorite
+        viewModelScope.launch {
+            val result = runCatching {
+                if (wasFavorite) favoritesRepo.remove(userId, huariqueId)
+                else favoritesRepo.add(userId, huariqueId)
+            }
+            if (result.isFailure) isFavorite = wasFavorite
+        }
+    }
+
+    // Mensaje efímero para Snackbar (moderación de reseñas US08, reporte US21).
+    var feedback by mutableStateOf<String?>(null)
+        private set
+    var reportSubmitting by mutableStateOf(false)
+        private set
+
+    fun consumeFeedback() { feedback = null }
 
     fun submitReview(huariqueId: Int, rating: Int, comment: String, onDone: () -> Unit) {
         val userId = SessionManager.userId ?: return
@@ -52,8 +89,26 @@ class HuariqueDetailViewModel : ViewModel() {
                     reviews = runCatching { repo.getReviews(huariqueId) }.getOrDefault(reviews + it)
                     onDone()
                 }
-                .onFailure { error = it.toUserMessage() }
+                .onFailure {
+                    // Incluye el mensaje de moderación del backend cuando aplica (US08).
+                    feedback = it.toUserMessage()
+                }
             isSubmitting = false
+        }
+    }
+
+    /** Reporta información incorrecta del huarique (US21). */
+    fun reportHuarique(huariqueId: Int, reason: String, onDone: () -> Unit) {
+        val userId = SessionManager.userId ?: return
+        viewModelScope.launch {
+            reportSubmitting = true
+            runCatching { reportRepo.createReport(huariqueId, userId, reason) }
+                .onSuccess {
+                    feedback = "Gracias, registramos tu reporte para revisión."
+                    onDone()
+                }
+                .onFailure { feedback = it.toUserMessage() }
+            reportSubmitting = false
         }
     }
 }

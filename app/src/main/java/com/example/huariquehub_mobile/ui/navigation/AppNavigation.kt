@@ -8,10 +8,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.huariquehub_mobile.data.model.UserRole
 import com.example.huariquehub_mobile.data.model.UserSession
+import com.example.huariquehub_mobile.ui.screens.auth.ForgotPasswordScreen
 import com.example.huariquehub_mobile.ui.screens.auth.LoginScreen
 import com.example.huariquehub_mobile.ui.screens.auth.RegisterScreen
 import com.example.huariquehub_mobile.ui.screens.home.HomeScreen
 import com.example.huariquehub_mobile.ui.screens.home.HuariqueDetailScreen
+import com.example.huariquehub_mobile.ui.screens.home.MapScreen
+import com.example.huariquehub_mobile.ui.screens.notifications.NotificationsScreen
+import com.example.huariquehub_mobile.ui.screens.preferences.PreferencesScreen
 import com.example.huariquehub_mobile.ui.screens.owner.CreateEditHuariqueScreen
 import com.example.huariquehub_mobile.ui.screens.owner.CreateEditPromoScreen
 import com.example.huariquehub_mobile.ui.screens.owner.OwnerDashboardScreen
@@ -21,8 +25,12 @@ import com.example.huariquehub_mobile.ui.screens.subscription.SubscriptionScreen
 object Routes {
     const val LOGIN            = "login"
     const val REGISTER         = "register"
+    const val FORGOT_PASSWORD  = "forgot_password"
     const val HOME             = "home"
     const val HUARIQUE_DETAIL  = "huarique_detail/{huariqueId}"
+    const val MAP              = "map"
+    const val NOTIFICATIONS    = "notifications"
+    const val PREFERENCES      = "preferences"
     const val OWNER_DASHBOARD  = "owner_dashboard"
     const val OWNER_NEW        = "owner_new"
     const val OWNER_EDIT       = "owner_edit/{huariqueId}"
@@ -51,8 +59,13 @@ fun AppNavigation() {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
-                onNavigateToRegister = { navController.navigate(Routes.REGISTER) }
+                onNavigateToRegister = { navController.navigate(Routes.REGISTER) },
+                onForgotPassword = { navController.navigate(Routes.FORGOT_PASSWORD) }
             )
+        }
+
+        composable(Routes.FORGOT_PASSWORD) {
+            ForgotPasswordScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.REGISTER) {
@@ -74,8 +87,23 @@ fun AppNavigation() {
                     if (session?.isOwner == true) navController.navigate(Routes.OWNER_DASHBOARD)
                     else navController.navigate(Routes.SUBSCRIPTION)
                 },
+                onMapClick = { navController.navigate(Routes.MAP) },
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
+                onPreferencesClick = { navController.navigate(Routes.PREFERENCES) },
                 userRole = session?.role ?: UserRole.CONSUMER
             )
+        }
+
+        composable(Routes.MAP) {
+            MapScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.NOTIFICATIONS) {
+            NotificationsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.PREFERENCES) {
+            PreferencesScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

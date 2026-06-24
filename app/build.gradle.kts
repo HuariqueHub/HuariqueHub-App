@@ -53,6 +53,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
 
+    // Mapa in-app con marcadores (US02): osmdroid usa tiles de OpenStreetMap (sin API key)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
     // Red: Retrofit + Moshi + OkHttp
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.moshi)

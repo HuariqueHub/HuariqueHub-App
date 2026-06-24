@@ -34,8 +34,17 @@ fun HuariqueDetailScreen(
 
     val huarique = viewModel.huarique
     val reviews = viewModel.reviews
-    var isFav by remember { mutableStateOf(false) }
     var showReviewDialog by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Muestra mensajes de moderación (US08) y confirmación de reporte (US21).
+    LaunchedEffect(viewModel.feedback) {
+        viewModel.feedback?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.consumeFeedback()
+        }
+    }
 
     if (huarique == null) {
         Scaffold(
@@ -84,11 +93,11 @@ fun HuariqueDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { isFav = !isFav }) {
+                    IconButton(onClick = { viewModel.toggleFavorite(huariqueId) }) {
                         Icon(
-                            if (isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            null,
-                            tint = if (isFav) ErrorRed else SurfaceColor
+                            if (viewModel.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (viewModel.isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                            tint = if (viewModel.isFavorite) ErrorRed else SurfaceColor
                         )
                     }
                     IconButton(onClick = {}) {
@@ -98,6 +107,7 @@ fun HuariqueDetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = OrangePrimary)
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showReviewDialog = true },
@@ -197,6 +207,34 @@ fun HuariqueDetailScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         InfoRow(Icons.Default.Schedule, huarique.hours)
 
+                        // Estado Abierto/Cerrado (US20/US22)
+                        val status = huarique.openStatus()
+                        if (status != OpenStatus.UNKNOWN) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (status == OpenStatus.OPEN) YellowGreen else BrownDark.copy(alpha = 0.85f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.Schedule, null,
+                                        tint = if (status == OpenStatus.OPEN) BrownDark else SurfaceColor,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        status.label,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (status == OpenStatus.OPEN) BrownDark else SurfaceColor
+                                    )
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(16.dp))
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                         Spacer(modifier = Modifier.height(16.dp))
@@ -234,6 +272,16 @@ fun HuariqueDetailScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("Ver mapa", fontSize = 13.sp)
                             }
+                        }
+
+                        // Reportar información incorrecta (US21)
+                        TextButton(
+                            onClick = { showReportDialog = true },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Icon(Icons.Default.Flag, null, modifier = Modifier.size(16.dp), tint = TextSecondary)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Reportar información", fontSize = 12.sp, color = TextSecondary)
                         }
                     }
                 }
@@ -300,6 +348,61 @@ fun HuariqueDetailScreen(
             }
         )
     }
+
+    // Dialog para reportar información incorrecta (US21)
+    if (showReportDialog) {
+        ReportDialog(
+            submitting = viewModel.reportSubmitting,
+            onDismiss = { showReportDialog = false },
+            onSubmit = { reason ->
+                viewModel.reportHuarique(huariqueId, reason) { showReportDialog = false }
+            }
+        )
+    }
+}
+
+@Composable
+private fun ReportDialog(
+    submitting: Boolean,
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit
+) {
+    var reason by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Reportar información", fontWeight = FontWeight.Bold, color = BrownDark) },
+        text = {
+            Column {
+                Text("¿Qué dato está incorrecto?", fontSize = 14.sp, color = TextSecondary)
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = reason,
+                    onValueChange = { reason = it },
+                    label = { Text("Describe el problema") },
+                    minLines = 2,
+                    maxLines = 4,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = OrangePrimary,
+                        focusedLabelColor = OrangePrimary
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (reason.isNotBlank()) onSubmit(reason) },
+                enabled = !submitting,
+                colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+                shape = RoundedCornerShape(10.dp)
+            ) { Text("Enviar reporte") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar", color = TextSecondary) }
+        },
+        containerColor = SurfaceColor
+    )
 }
 
 @Composable

@@ -7,13 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.huariquehub_mobile.data.model.Category
 import com.example.huariquehub_mobile.data.model.Huarique
+import com.example.huariquehub_mobile.data.remote.SessionManager
 import com.example.huariquehub_mobile.data.remote.toUserMessage
+import com.example.huariquehub_mobile.data.repository.FavoriteRepository
 import com.example.huariquehub_mobile.data.repository.HuariqueRepository
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
     private val repo = HuariqueRepository()
+    private val favoritesRepo = FavoriteRepository()
 
     var isLoading by mutableStateOf(false)
         private set
@@ -24,6 +27,22 @@ class HomeViewModel : ViewModel() {
     var categories by mutableStateOf<List<Category>>(listOf(Category(0, "Todas", "🍽️")))
         private set
 
+    // Ids de huariques favoritos del usuario actual (US03).
+    var favoriteIds by mutableStateOf<Set<Int>>(emptySet())
+        private set
+
+    // Filtro "Cerca de mí" (US19) — usa el parámetro near del backend.
+    var nearbyOnly by mutableStateOf(false)
+        private set
+
+    // Filtro "Solo favoritos" (US03).
+    var favoritesOnly by mutableStateOf(false)
+        private set
+
+    // Sugerencias personalizadas (US18).
+    var suggestions by mutableStateOf<List<Huarique>>(emptyList())
+        private set
+
     init { load() }
 
     fun load() {
@@ -31,7 +50,8 @@ class HomeViewModel : ViewModel() {
             isLoading = true
             error = null
             runCatching {
-                val huariquesResult = repo.getHuariques()
+                val huariquesResult =
+                    if (nearbyOnly) repo.getNearbyHuariques() else repo.getHuariques()
                 val categoriesResult = repo.getCategories()
                 huariquesResult to categoriesResult
             }.onSuccess { (h, c) ->
@@ -39,6 +59,56 @@ class HomeViewModel : ViewModel() {
                 categories = listOf(Category(0, "Todas", "🍽️")) + c
             }.onFailure { error = it.toUserMessage() }
             isLoading = false
+            loadFavorites()
+            loadSuggestions()
+        }
+    }
+
+    private fun loadFavorites() {
+        val userId = SessionManager.userId ?: return
+        viewModelScope.launch {
+            runCatching { favoritesRepo.getFavoriteIds(userId) }
+                .onSuccess { favoriteIds = it }
+        }
+    }
+
+    private fun loadSuggestions() {
+        val userId = SessionManager.userId ?: return
+        viewModelScope.launch {
+            runCatching { repo.getSuggestions(userId) }
+                .onSuccess { suggestions = it }
+        }
+    }
+
+    /** Activa/desactiva el filtro "Cerca de mí" y recarga la lista. */
+    fun toggleNearby() {
+        nearbyOnly = !nearbyOnly
+        load()
+    }
+
+    /** Activa/desactiva el filtro "Solo favoritos". */
+    fun toggleFavoritesOnly() {
+        favoritesOnly = !favoritesOnly
+    }
+
+    /**
+     * Marca/desmarca un huarique como favorito (US03). Actualiza el estado
+     * local de inmediato y revierte si la petición al backend falla.
+     */
+    fun toggleFavorite(huariqueId: Int) {
+        val userId = SessionManager.userId ?: return
+        val wasFavorite = huariqueId in favoriteIds
+        favoriteIds = if (wasFavorite) favoriteIds - huariqueId else favoriteIds + huariqueId
+        viewModelScope.launch {
+            val result = runCatching {
+                if (wasFavorite) favoritesRepo.remove(userId, huariqueId)
+                else favoritesRepo.add(userId, huariqueId)
+            }
+            if (result.isFailure) {
+                // Revertir el cambio optimista ante un error de red.
+                favoriteIds =
+                    if (wasFavorite) favoriteIds + huariqueId else favoriteIds - huariqueId
+            }
         }
     }
 }

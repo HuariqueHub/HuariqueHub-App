@@ -6,10 +6,16 @@ import com.example.huariquehub_mobile.data.model.Plan
 import com.example.huariquehub_mobile.data.model.Promo
 import com.example.huariquehub_mobile.data.model.Review
 import com.example.huariquehub_mobile.data.model.Subscription
+import com.example.huariquehub_mobile.data.model.AppNotification
+import com.example.huariquehub_mobile.data.model.Receipt
+import com.example.huariquehub_mobile.data.model.UserPreferences
 import com.example.huariquehub_mobile.data.remote.dto.CategoryDto
 import com.example.huariquehub_mobile.data.remote.dto.HuariqueDto
+import com.example.huariquehub_mobile.data.remote.dto.NotificationDto
 import com.example.huariquehub_mobile.data.remote.dto.PlanDto
+import com.example.huariquehub_mobile.data.remote.dto.PreferenceDto
 import com.example.huariquehub_mobile.data.remote.dto.PromoDto
+import com.example.huariquehub_mobile.data.remote.dto.ReceiptDto
 import com.example.huariquehub_mobile.data.remote.dto.ReviewDto
 import com.example.huariquehub_mobile.data.remote.dto.SubscriptionDto
 
@@ -34,7 +40,9 @@ fun HuariqueDto.toModel(): Huarique = Huarique(
     ownerId = ownerId,
     deliveryAvailable = deliveryAvailable ?: false,
     takeawayAvailable = takeawayAvailable ?: false,
-    dineInAvailable = dineInAvailable ?: true
+    dineInAvailable = dineInAvailable ?: true,
+    openAt = openAt,
+    closeAt = closeAt
 )
 
 fun CategoryDto.toModel(): Category = Category(
@@ -84,6 +92,34 @@ fun SubscriptionDto.toModel(): Subscription = Subscription(
     isActive = isActive,
     startDate = startDate,
     endDate = endDate
+)
+
+fun PreferenceDto.toModel(): UserPreferences = UserPreferences(
+    userId = userId,
+    preferredCategory = preferredCategory,
+    maxBudget = maxBudget,
+    preferredDistrict = preferredDistrict,
+    notificationsEnabled = notificationsEnabled
+)
+
+fun NotificationDto.toModel(): AppNotification = AppNotification(
+    id = id,
+    title = title,
+    body = body,
+    isRead = isRead,
+    date = createdAt?.take(10).orEmpty()
+)
+
+fun ReceiptDto.toModel(): Receipt = Receipt(
+    receiptNumber = receiptNumber,
+    subscriptionId = subscriptionId,
+    planName = planName,
+    amount = amount,
+    currency = currency,
+    status = status,
+    issuedAt = issuedAt?.take(10).orEmpty(),
+    periodStart = periodStart?.take(10).orEmpty(),
+    periodEnd = periodEnd?.take(10)
 )
 
 private fun formatHours(openAt: String?, closeAt: String?): String =

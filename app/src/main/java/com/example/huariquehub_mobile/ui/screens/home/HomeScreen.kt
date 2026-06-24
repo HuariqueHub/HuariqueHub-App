@@ -30,6 +30,9 @@ import com.example.huariquehub_mobile.ui.theme.*
 fun HomeScreen(
     onHuariqueClick: (Int) -> Unit,
     onProfileClick: () -> Unit,
+    onMapClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    onPreferencesClick: () -> Unit = {},
     userRole: UserRole = UserRole.CONSUMER,
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -42,7 +45,8 @@ fun HomeScreen(
             huarique.district.contains(searchQuery, ignoreCase = true) ||
             huarique.category.contains(searchQuery, ignoreCase = true)
         val matchesCategory = selectedCategory == "Todas" || huarique.category == selectedCategory
-        matchesSearch && matchesCategory
+        val matchesFavorites = !viewModel.favoritesOnly || huarique.id in viewModel.favoriteIds
+        matchesSearch && matchesCategory && matchesFavorites
     }
 
     Scaffold(
@@ -64,6 +68,15 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onMapClick) {
+                        Icon(Icons.Default.Map, contentDescription = "Ver en mapa", tint = SurfaceColor)
+                    }
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = SurfaceColor)
+                    }
+                    IconButton(onClick = onPreferencesClick) {
+                        Icon(Icons.Default.Tune, contentDescription = "Preferencias", tint = SurfaceColor)
+                    }
                     IconButton(onClick = onProfileClick) {
                         Box(
                             modifier = Modifier
@@ -166,6 +179,60 @@ fun HomeScreen(
                 }
             }
 
+            // Sugeridos para ti (US18)
+            if (viewModel.suggestions.isNotEmpty()) {
+                item {
+                    Column(modifier = Modifier.padding(top = 8.dp)) {
+                        Text(
+                            text = "Sugeridos para ti ✨",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = BrownDark,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(viewModel.suggestions) { s ->
+                                Surface(
+                                    onClick = { onHuariqueClick(s.id) },
+                                    shape = RoundedCornerShape(14.dp),
+                                    color = SurfaceColor,
+                                    shadowElevation = 2.dp,
+                                    modifier = Modifier.width(180.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text(
+                                            s.name,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = BrownDark,
+                                            fontSize = 14.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            "${s.category} · ${s.district}",
+                                            color = TextSecondary,
+                                            fontSize = 12.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(Modifier.height(4.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Star, null, tint = StarYellow, modifier = Modifier.size(14.dp))
+                                            Spacer(Modifier.width(2.dp))
+                                            Text("%.1f".format(s.rating), fontSize = 12.sp, color = BrownDark)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Categorías
             item {
                 Column(modifier = Modifier.padding(top = 8.dp)) {
@@ -188,6 +255,48 @@ fun HomeScreen(
                             )
                         }
                     }
+                }
+            }
+
+            // Filtros rápidos: Cerca de mí (US19) y Favoritos (US03)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = viewModel.nearbyOnly,
+                        onClick = { viewModel.toggleNearby() },
+                        label = { Text("Cerca de mí") },
+                        leadingIcon = {
+                            Icon(Icons.Default.NearMe, null, modifier = Modifier.size(16.dp))
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = OrangePrimary,
+                            selectedLabelColor = SurfaceColor,
+                            selectedLeadingIconColor = SurfaceColor
+                        )
+                    )
+                    FilterChip(
+                        selected = viewModel.favoritesOnly,
+                        onClick = { viewModel.toggleFavoritesOnly() },
+                        label = { Text("Favoritos") },
+                        leadingIcon = {
+                            Icon(
+                                if (viewModel.favoritesOnly) Icons.Default.Favorite
+                                else Icons.Default.FavoriteBorder,
+                                null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = OrangePrimary,
+                            selectedLabelColor = SurfaceColor,
+                            selectedLeadingIconColor = SurfaceColor
+                        )
+                    )
                 }
             }
 
@@ -265,6 +374,8 @@ fun HomeScreen(
                     items(filteredHuariques) { huarique ->
                         HuariqueCard(
                             huarique = huarique,
+                            isFavorite = huarique.id in viewModel.favoriteIds,
+                            onToggleFavorite = { viewModel.toggleFavorite(huarique.id) },
                             onClick = { onHuariqueClick(huarique.id) }
                         )
                     }
@@ -306,9 +417,11 @@ fun CategoryChip(
 @Composable
 fun HuariqueCard(
     huarique: Huarique,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    var isFav by remember { mutableStateOf(huarique.isFavorite) }
+    val status = huarique.openStatus()
 
     Card(
         modifier = Modifier
@@ -347,16 +460,34 @@ fun HuariqueCard(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                // Botón favorito
+                // Botón favorito (US03)
                 IconButton(
-                    onClick = { isFav = !isFav },
+                    onClick = onToggleFavorite,
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     Icon(
-                        if (isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        null,
-                        tint = if (isFav) ErrorRed else SurfaceColor
+                        if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                        tint = if (isFavorite) ErrorRed else SurfaceColor
                     )
+                }
+                // Estado Abierto/Cerrado (US20/US22)
+                if (status != OpenStatus.UNKNOWN) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(10.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (status == OpenStatus.OPEN) YellowGreen else BrownDark.copy(alpha = 0.85f)
+                    ) {
+                        Text(
+                            status.label,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontSize = 11.sp,
+                            color = if (status == OpenStatus.OPEN) BrownDark else SurfaceColor,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
 

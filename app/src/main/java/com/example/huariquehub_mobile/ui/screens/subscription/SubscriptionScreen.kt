@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -121,6 +122,29 @@ fun SubscriptionScreen(
                 }
             }
 
+            // Descargar comprobante de pago (US25)
+            if (activeSub != null) {
+                item {
+                    OutlinedButton(
+                        onClick = { viewModel.loadReceipt() },
+                        enabled = !viewModel.loadingReceipt,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = OrangePrimary),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, OrangePrimary)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ReceiptLong, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            if (viewModel.loadingReceipt) "Generando comprobante..." else "Descargar comprobante",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+
             // Sección título
             item {
                 Text(
@@ -214,6 +238,41 @@ fun SubscriptionScreen(
                 }
             }
         )
+    }
+
+    // Comprobante de pago (US25)
+    viewModel.receipt?.let { receipt ->
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissReceipt() },
+            title = { Text("Comprobante de pago", fontWeight = FontWeight.Bold, color = BrownDark) },
+            text = {
+                Column {
+                    ReceiptRow("N° comprobante", receipt.receiptNumber)
+                    ReceiptRow("Plan", receipt.planName)
+                    ReceiptRow("Monto", "${receipt.currency} %.2f".format(receipt.amount))
+                    ReceiptRow("Estado", receipt.status)
+                    ReceiptRow("Emitido", receipt.issuedAt)
+                    ReceiptRow("Periodo", "${receipt.periodStart}${receipt.periodEnd?.let { " — $it" } ?: ""}")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissReceipt() }) {
+                    Text("Cerrar", color = OrangePrimary, fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = SurfaceColor
+        )
+    }
+}
+
+@Composable
+private fun ReceiptRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 13.sp, color = TextSecondary)
+        Text(value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = BrownDark)
     }
 }
 

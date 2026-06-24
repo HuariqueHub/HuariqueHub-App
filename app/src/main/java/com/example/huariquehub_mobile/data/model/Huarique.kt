@@ -19,7 +19,10 @@ data class Huarique(
     val ownerId: Int? = null,
     val deliveryAvailable: Boolean = false,
     val takeawayAvailable: Boolean = false,
-    val dineInAvailable: Boolean = true
+    val dineInAvailable: Boolean = true,
+    // Horario crudo (HH:mm) usado para calcular el estado Abierto/Cerrado (US20/US22).
+    val openAt: String? = null,
+    val closeAt: String? = null
 )
 
 val sampleHuariques = listOf(

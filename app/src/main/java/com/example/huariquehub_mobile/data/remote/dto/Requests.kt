@@ -51,3 +51,20 @@ data class CreateSubscriptionRequest(
     val planId: String,
     val endDate: String? = null
 )
+
+data class UpdatePreferenceRequest(
+    val preferredCategory: String?,
+    val maxBudget: Double?,
+    val preferredDistrict: String?,
+    val notificationsEnabled: Boolean
+)
+
+data class CreateReportRequest(
+    val huariqueId: Int,
+    val userId: Int,
+    val reason: String
+)
+
+data class ForgotPasswordRequest(val email: String)
+
+data class ResetPasswordRequest(val email: String, val newPassword: String)

@@ -49,6 +49,55 @@ data class CategoryDto(
     val name: String
 )
 
+data class FavoriteDto(
+    val id: Int,
+    val userId: Int,
+    val huariqueId: Int,
+    val createdAt: String?
+)
+
+data class PreferenceDto(
+    val userId: Int,
+    val preferredCategory: String?,
+    val maxBudget: Double?,
+    val preferredDistrict: String?,
+    val notificationsEnabled: Boolean
+)
+
+data class ReportDto(
+    val id: Int,
+    val huariqueId: Int,
+    val userId: Int,
+    val reason: String,
+    val status: String,
+    val createdAt: String?
+)
+
+data class NotificationDto(
+    val id: Int,
+    val userId: Int,
+    val title: String,
+    val body: String,
+    val isRead: Boolean,
+    val createdAt: String?
+)
+
+data class MessageDto(val message: String)
+
+data class ReceiptDto(
+    val receiptNumber: String,
+    val subscriptionId: Int,
+    val userId: Int,
+    val planId: String,
+    val planName: String,
+    val amount: Double,
+    val currency: String,
+    val status: String,
+    val issuedAt: String?,
+    val periodStart: String?,
+    val periodEnd: String?
+)
+
 data class ReviewDto(
     val id: Int,
     val huariqueId: Int,

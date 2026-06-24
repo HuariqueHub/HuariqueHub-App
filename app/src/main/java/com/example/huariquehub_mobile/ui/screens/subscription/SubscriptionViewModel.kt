@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.huariquehub_mobile.data.model.Plan
+import com.example.huariquehub_mobile.data.model.Receipt
 import com.example.huariquehub_mobile.data.model.Subscription
 import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.MembershipRepository
@@ -22,6 +23,12 @@ class SubscriptionViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
     var error by mutableStateOf<String?>(null)
+        private set
+
+    // Comprobante de pago (US25).
+    var receipt by mutableStateOf<Receipt?>(null)
+        private set
+    var loadingReceipt by mutableStateOf(false)
         private set
 
     fun load(userId: Int) {
@@ -51,4 +58,19 @@ class SubscriptionViewModel : ViewModel() {
                 .onFailure { error = it.toUserMessage() }
         }
     }
+
+    /** Descarga el comprobante de la suscripción activa (US25). */
+    fun loadReceipt() {
+        val subId = activeSub?.id ?: return
+        viewModelScope.launch {
+            loadingReceipt = true
+            error = null
+            runCatching { repo.getReceipt(subId) }
+                .onSuccess { receipt = it }
+                .onFailure { error = it.toUserMessage() }
+            loadingReceipt = false
+        }
+    }
+
+    fun dismissReceipt() { receipt = null }
 }

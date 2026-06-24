@@ -1,0 +1,74 @@
+package com.example.huariquehub_mobile.ui.screens.preferences
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.huariquehub_mobile.data.remote.SessionManager
+import com.example.huariquehub_mobile.data.remote.toUserMessage
+import com.example.huariquehub_mobile.data.repository.PreferenceRepository
+import kotlinx.coroutines.launch
+
+class PreferencesViewModel : ViewModel() {
+
+    private val repo = PreferenceRepository()
+
+    var preferredCategory by mutableStateOf("")
+        private set
+    var maxBudget by mutableStateOf("")
+        private set
+    var preferredDistrict by mutableStateOf("")
+        private set
+    var notificationsEnabled by mutableStateOf(true)
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+    var saved by mutableStateOf(false)
+        private set
+    var error by mutableStateOf<String?>(null)
+        private set
+
+    fun onCategoryChange(v: String) { preferredCategory = v; saved = false }
+    fun onBudgetChange(v: String) { maxBudget = v.filter { it.isDigit() || it == '.' }; saved = false }
+    fun onDistrictChange(v: String) { preferredDistrict = v; saved = false }
+    fun onNotificationsChange(v: Boolean) { notificationsEnabled = v; saved = false }
+
+    fun load() {
+        val userId = SessionManager.userId ?: return
+        viewModelScope.launch {
+            isLoading = true
+            error = null
+            runCatching { repo.getPreferences(userId) }
+                .onSuccess { p ->
+                    preferredCategory = p.preferredCategory.orEmpty()
+                    maxBudget = p.maxBudget?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() }.orEmpty()
+                    preferredDistrict = p.preferredDistrict.orEmpty()
+                    notificationsEnabled = p.notificationsEnabled
+                }
+                .onFailure { error = it.toUserMessage() }
+            isLoading = false
+        }
+    }
+
+    fun save() {
+        val userId = SessionManager.userId ?: return
+        viewModelScope.launch {
+            isLoading = true
+            error = null
+            saved = false
+            runCatching {
+                repo.savePreferences(
+                    userId = userId,
+                    preferredCategory = preferredCategory.trim().ifBlank { null },
+                    maxBudget = maxBudget.toDoubleOrNull(),
+                    preferredDistrict = preferredDistrict.trim().ifBlank { null },
+                    notificationsEnabled = notificationsEnabled
+                )
+            }.onSuccess { saved = true }
+             .onFailure { error = it.toUserMessage() }
+            isLoading = false
+        }
+    }
+}

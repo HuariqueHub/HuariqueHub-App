@@ -55,7 +55,38 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // Mensaje informativo (US16: recuperación de contraseña).
+    var message by mutableStateOf<String?>(null)
+        private set
+
+    /** Solicita instrucciones de recuperación de contraseña (US16). */
+    fun forgotPassword(email: String, onDone: () -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            error = null
+            message = null
+            runCatching { repo.forgotPassword(email) }
+                .onSuccess { message = it; onDone() }
+                .onFailure { error = it.toUserMessage() }
+            isLoading = false
+        }
+    }
+
+    /** Restablece la contraseña con una nueva (US16). */
+    fun resetPassword(email: String, newPassword: String, onDone: () -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            error = null
+            message = null
+            runCatching { repo.resetPassword(email, newPassword) }
+                .onSuccess { message = it; onDone() }
+                .onFailure { error = it.toUserMessage() }
+            isLoading = false
+        }
+    }
+
     fun clearError() {
         error = null
+        message = null
     }
 }

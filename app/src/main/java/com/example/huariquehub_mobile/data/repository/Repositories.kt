@@ -14,8 +14,15 @@ import com.example.huariquehub_mobile.data.remote.dto.CreateHuariqueRequest
 import com.example.huariquehub_mobile.data.remote.dto.CreatePromoRequest
 import com.example.huariquehub_mobile.data.remote.dto.CreateReviewRequest
 import com.example.huariquehub_mobile.data.remote.dto.CreateSubscriptionRequest
+import com.example.huariquehub_mobile.data.remote.dto.CreateReportRequest
 import com.example.huariquehub_mobile.data.remote.dto.CreateUserRequest
+import com.example.huariquehub_mobile.data.remote.dto.ForgotPasswordRequest
 import com.example.huariquehub_mobile.data.remote.dto.LoginRequest
+import com.example.huariquehub_mobile.data.remote.dto.ResetPasswordRequest
+import com.example.huariquehub_mobile.data.remote.dto.UpdatePreferenceRequest
+import com.example.huariquehub_mobile.data.model.AppNotification
+import com.example.huariquehub_mobile.data.model.Receipt
+import com.example.huariquehub_mobile.data.model.UserPreferences
 import com.example.huariquehub_mobile.data.remote.toModel
 
 private val api get() = ApiClient.api
@@ -37,6 +44,14 @@ class AuthRepository {
         return login(email, password)
     }
 
+    /** Inicia la recuperación de contraseña (US16). */
+    suspend fun forgotPassword(email: String): String =
+        api.forgotPassword(ForgotPasswordRequest(email.trim())).message
+
+    /** Restablece la contraseña (US16). */
+    suspend fun resetPassword(email: String, newPassword: String): String =
+        api.resetPassword(ResetPasswordRequest(email.trim(), newPassword)).message
+
     private fun AuthResponseDto.toSession() = UserSession(
         id = id,
         name = name,
@@ -44,6 +59,40 @@ class AuthRepository {
         role = if (role.equals("owner", ignoreCase = true)) UserRole.OWNER else UserRole.CONSUMER,
         token = token.orEmpty()
     )
+}
+
+/** Preferencias del usuario (US17) y notificaciones (US11). */
+class PreferenceRepository {
+    suspend fun getPreferences(userId: Int): UserPreferences =
+        api.getPreferences(userId).toModel()
+
+    suspend fun savePreferences(
+        userId: Int,
+        preferredCategory: String?,
+        maxBudget: Double?,
+        preferredDistrict: String?,
+        notificationsEnabled: Boolean
+    ): UserPreferences = api.savePreferences(
+        userId,
+        UpdatePreferenceRequest(preferredCategory, maxBudget, preferredDistrict, notificationsEnabled)
+    ).toModel()
+}
+
+/** Reportes de información incorrecta (US21). */
+class ReportRepository {
+    suspend fun createReport(huariqueId: Int, userId: Int, reason: String) {
+        api.createReport(CreateReportRequest(huariqueId, userId, reason.trim()))
+    }
+}
+
+/** Notificaciones del usuario (US12). */
+class NotificationRepository {
+    suspend fun getNotifications(userId: Int): List<AppNotification> =
+        api.getNotifications(userId).map { it.toModel() }
+
+    suspend fun markAsRead(id: Int) {
+        api.markNotificationRead(id)
+    }
 }
 
 class HuariqueRepository {
@@ -54,8 +103,28 @@ class HuariqueRepository {
     suspend fun getHuariquesByOwner(ownerId: Int): List<Huarique> =
         api.getHuariques(ownerId = ownerId).map { it.toModel() }
 
+    /**
+     * Huariques marcados como cercanos por el backend (US19 "Cerca de mí").
+     * El backend responde 404 cuando un filtro no arroja resultados; eso se
+     * traduce a una lista vacía en lugar de un error.
+     */
+    suspend fun getNearbyHuariques(): List<Huarique> =
+        try {
+            api.getHuariques(near = true).map { it.toModel() }
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 404) emptyList() else throw e
+        }
+
     suspend fun getHuarique(id: Int): Huarique =
         api.getHuarique(id).toModel()
+
+    /** Sugerencias personalizadas para el usuario (US18). */
+    suspend fun getSuggestions(userId: Int): List<Huarique> =
+        try {
+            api.getSuggestions(userId).map { it.toModel() }
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 404) emptyList() else throw e
+        }
 
     suspend fun getCategories(): List<Category> =
         api.getCategories().map { it.toModel() }
@@ -96,6 +165,33 @@ class HuariqueRepository {
         api.createReview(CreateReviewRequest(huariqueId, userId, rating, comment)).toModel()
 }
 
+/**
+ * Repositorio de favoritos (US03). Se apoya en los endpoints REST
+ * `/favorites` del backend desplegado: GET por usuario, POST y DELETE.
+ */
+class FavoriteRepository {
+
+    /** Ids de huariques marcados como favoritos por el usuario. */
+    suspend fun getFavoriteIds(userId: Int): Set<Int> =
+        api.getFavorites(userId).map { it.huariqueId }.toSet()
+
+    /** Agrega a favoritos. Tolera el 409 (ya existía) como éxito idempotente. */
+    suspend fun add(userId: Int, huariqueId: Int) {
+        val response = api.addFavorite(huariqueId, userId)
+        if (!response.isSuccessful && response.code() != 409) {
+            throw retrofit2.HttpException(response)
+        }
+    }
+
+    /** Quita de favoritos. Tolera el 404 (ya no existía) como éxito idempotente. */
+    suspend fun remove(userId: Int, huariqueId: Int) {
+        val response = api.removeFavorite(huariqueId, userId)
+        if (!response.isSuccessful && response.code() != 404) {
+            throw retrofit2.HttpException(response)
+        }
+    }
+}
+
 class MembershipRepository {
 
     suspend fun getPlans(): List<Plan> =
@@ -108,6 +204,10 @@ class MembershipRepository {
 
     suspend fun subscribe(userId: Int, planId: String): Subscription =
         api.subscribe(CreateSubscriptionRequest(userId, planId)).toModel()
+
+    /** Comprobante de pago de una suscripción (US25). */
+    suspend fun getReceipt(subscriptionId: Int): Receipt =
+        api.getReceipt(subscriptionId).toModel()
 
     suspend fun getPromosByOwner(ownerId: Int): List<Promo> =
         api.getPromos(ownerId = ownerId).map { it.toModel() }

@@ -33,6 +33,7 @@ import com.example.huariquehub_mobile.ui.theme.*
 fun LoginScreen(
     onLoginSuccess: (UserSession) -> Unit,
     onNavigateToRegister: () -> Unit,
+    onForgotPassword: () -> Unit = {},
     viewModel: AuthViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
@@ -169,7 +170,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
                     TextButton(
-                        onClick = {},
+                        onClick = onForgotPassword,
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("¿Olvidaste tu contraseña?", color = OrangePrimary, fontSize = 13.sp)
