@@ -1,5 +1,6 @@
 package com.example.huariquehub_mobile.ui.screens.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +13,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -22,8 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.huariquehub_mobile.data.model.UserRole
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.huariquehub_mobile.R
 import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
+
+private val RegisterBackground = Color(0xFFD4E8A0)
 
 @Composable
 fun RegisterScreen(
@@ -44,11 +49,7 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(BrownDark, BrownMedium, OrangePrimary)
-                )
-            )
+            .background(RegisterBackground)
     ) {
         Column(
             modifier = Modifier
@@ -57,19 +58,14 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
-            Text("🍽️", fontSize = 48.sp, textAlign = TextAlign.Center)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Crear Cuenta",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = SurfaceColor
+
+            // logo
+            Image(
+                painter = painterResource(id = R.drawable.logo_puntosabor),
+                contentDescription = "PuntoSabor logo",
+                modifier = Modifier.size(130.dp)
             )
-            Text(
-                text = "Únete a la comunidad PuntoSabor",
-                fontSize = 14.sp,
-                color = SurfaceColor.copy(alpha = 0.8f)
-            )
+
             Spacer(modifier = Modifier.height(28.dp))
 
             Card(
@@ -86,8 +82,21 @@ fun RegisterScreen(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Text(
+                        text = "Crear Cuenta",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BrownDark
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Únete a la comunidad PuntoSabor",
+                        fontSize = 14.sp,
+                        color = TextSecondary
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Selector de rol
+                    // selector de rol
                     Text("¿Cómo usarás PuntoSabor?", fontSize = 14.sp, color = TextSecondary)
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -111,7 +120,7 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Nombre
+                    // nombre
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it; validationError = ""; viewModel.clearError() },
@@ -128,7 +137,7 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Email
+                    // email
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it; validationError = ""; viewModel.clearError() },
@@ -146,7 +155,7 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Contraseña
+                    // contraseña
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it; validationError = ""; viewModel.clearError() },
@@ -173,7 +182,7 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Confirmar contraseña
+                    // confirmar contraseña
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it; validationError = ""; viewModel.clearError() },
