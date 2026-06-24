@@ -30,7 +30,8 @@ import com.example.huariquehub_mobile.R
 import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
 
-// fondo verde claro del diseño original
+// sección de autenticación principal
+// validación de campos antes de llamar al backend
 private val LoginBackground = Color(0xFFD4E8A0)
 
 @Composable
