@@ -10,6 +10,7 @@ import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.PreferenceRepository
 import kotlinx.coroutines.launch
 
+/** Carga y persiste las preferencias de categoría y presupuesto del usuario. */
 class PreferencesViewModel : ViewModel() {
 
     private val repo = PreferenceRepository()
