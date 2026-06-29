@@ -40,6 +40,10 @@ fun OwnerDashboardScreen(
     }
 
     val ownerHuariques = viewModel.huariques
+    val averageRating = remember(ownerHuariques) {
+        if (ownerHuariques.isEmpty()) null
+        else ownerHuariques.map { it.rating }.average()
+    }
     var showDeleteDialog by remember { mutableStateOf<Huarique?>(null) }
 
     Scaffold(
@@ -95,8 +99,7 @@ fun OwnerDashboardScreen(
                         )
                         StatCard(
                             modifier = Modifier.weight(1f),
-                            value = if (ownerHuariques.isEmpty()) "—"
-                                    else "%.1f".format(ownerHuariques.map { it.rating }.average()),
+                            value = averageRating?.let { "%.1f".format(it) } ?: "—",
                             label = "Rating prom."
                         )
                         StatCard(
@@ -183,7 +186,7 @@ fun OwnerDashboardScreen(
                     }
                 }
             } else {
-                items(ownerHuariques) { huarique ->
+                items(ownerHuariques, key = { it.id }) { huarique ->
                     OwnerHuariqueCard(
                         huarique = huarique,
                         onEdit = { onEditHuarique(huarique.id) },

@@ -26,7 +26,9 @@ class OwnerDashboardViewModel : ViewModel() {
             isLoading = true
             error = null
             runCatching { repo.getHuariquesByOwner(ownerId) }
-                .onSuccess { huariques = it }
+                .onSuccess {
+                    huariques = it.sortedBy { huarique -> huarique.name.lowercase() }
+                }
                 .onFailure { error = it.toUserMessage() }
             isLoading = false
         }
