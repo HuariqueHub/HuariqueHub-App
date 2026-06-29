@@ -27,6 +27,7 @@ import com.example.huariquehub_mobile.data.remote.toModel
 
 private val api get() = ApiClient.api
 
+/** Acceso a endpoints de autenticación y recuperación de contraseña. */
 class AuthRepository {
 
     suspend fun login(email: String, password: String): UserSession =
@@ -95,6 +96,7 @@ class NotificationRepository {
     }
 }
 
+/** Consultas y mutaciones de huariques, reseñas y promos asociadas. */
 class HuariqueRepository {
 
     suspend fun getHuariques(): List<Huarique> =
