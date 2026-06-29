@@ -11,6 +11,7 @@ import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.NotificationRepository
 import kotlinx.coroutines.launch
 
+/** Lista y marca como leídas las notificaciones del usuario actual. */
 class NotificationsViewModel : ViewModel() {
 
     private val repo = NotificationRepository()
