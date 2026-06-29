@@ -22,10 +22,12 @@ import com.example.huariquehub_mobile.ui.screens.owner.OwnerDashboardScreen
 import com.example.huariquehub_mobile.ui.screens.owner.OwnerPromosScreen
 import com.example.huariquehub_mobile.ui.screens.subscription.SubscriptionScreen
 
-// rutas de autenticación
-// rutas del explorador
-// rutas del propietario
-
+/**
+ * Constantes de rutas de navegación.
+ * - Autenticación: login, registro y recuperación de contraseña.
+ * - Explorador: home, mapa, detalle, notificaciones y preferencias.
+ * - Propietario: dashboard, CRUD de huariques y promos, suscripción.
+ */
 object Routes {
     const val LOGIN            = "login"
     const val REGISTER         = "register"
@@ -48,6 +50,7 @@ object Routes {
     fun ownerEditPromo(id: Int) = "owner_edit_promo/$id"
 }
 
+/** Grafo principal de pantallas; el destino inicial es [Routes.LOGIN]. */
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
