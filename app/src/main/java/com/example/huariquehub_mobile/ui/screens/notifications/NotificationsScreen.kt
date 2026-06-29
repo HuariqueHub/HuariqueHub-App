@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -43,6 +44,16 @@ fun NotificationsScreen(
         }
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding).padding(top = 8.dp)) {
+            viewModel.error?.let { message ->
+                Text(
+                    message,
+                    color = ErrorRed,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
             when {
                 viewModel.isLoading && viewModel.notifications.isEmpty() ->
                     CircularProgressIndicator(color = OrangePrimary, modifier = Modifier.align(Alignment.Center))
@@ -61,7 +72,7 @@ fun NotificationsScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(viewModel.notifications) { n ->
+                    items(viewModel.notifications, key = { it.id }) { n ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -72,7 +83,7 @@ fun NotificationsScreen(
                             )
                         ) {
                             Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Notifications, null, tint = OrangePrimary)
+                                Icon(Icons.Default.Notifications, "Notificación", tint = OrangePrimary)
                                 Spacer(Modifier.width(12.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(n.title, fontWeight = FontWeight.SemiBold, color = BrownDark, fontSize = 15.sp)
@@ -83,7 +94,7 @@ fun NotificationsScreen(
                                 if (!n.isRead) {
                                     Surface(
                                         color = OrangePrimary,
-                                        shape = androidx.compose.foundation.shape.CircleShape
+                                        shape = CircleShape
                                     ) {
                                         Box(Modifier.size(10.dp))
                                     }

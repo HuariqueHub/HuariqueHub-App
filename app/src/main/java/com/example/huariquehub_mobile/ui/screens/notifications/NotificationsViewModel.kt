@@ -29,7 +29,11 @@ class NotificationsViewModel : ViewModel() {
             isLoading = true
             error = null
             runCatching { repo.getNotifications(userId) }
-                .onSuccess { notifications = it }
+                .onSuccess {
+                    notifications = it.sortedWith(
+                        compareBy<AppNotification> { it.isRead }.thenByDescending { it.id }
+                    )
+                }
                 .onFailure { error = it.toUserMessage() }
             isLoading = false
         }
