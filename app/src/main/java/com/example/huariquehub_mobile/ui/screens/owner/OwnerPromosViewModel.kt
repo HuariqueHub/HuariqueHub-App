@@ -26,7 +26,12 @@ class OwnerPromosViewModel : ViewModel() {
             isLoading = true
             error = null
             runCatching { repo.getPromosByOwner(ownerId) }
-                .onSuccess { promos = it }
+                .onSuccess {
+                    promos = it.sortedWith(
+                        compareByDescending<Promo> { it.isActive }
+                            .thenBy(String.CASE_INSENSITIVE_ORDER) { promo -> promo.title }
+                    )
+                }
                 .onFailure { error = it.toUserMessage() }
             isLoading = false
         }
