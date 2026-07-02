@@ -23,6 +23,19 @@ interface ApiService {
     @POST("auth/reset-password")
     suspend fun resetPassword(@Body body: ResetPasswordRequest): MessageDto
 
+    // ── Perfil de usuario (CRUD de cuenta) ───────────────────────────────────
+    @GET("auth/users/{id}")
+    suspend fun getProfile(@Path("id") id: Int): UserDto
+
+    @PATCH("auth/users/{id}")
+    suspend fun updateProfile(
+        @Path("id") id: Int,
+        @Body body: UpdateProfileRequest
+    ): UserDto
+
+    @DELETE("auth/users/{id}")
+    suspend fun deleteAccount(@Path("id") id: Int): MessageDto
+
     // ── Huariques ───────────────────────────────────────────────────────────
     @GET("huariques")
     suspend fun getHuariques(
