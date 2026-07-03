@@ -326,14 +326,22 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (searchQuery.isEmpty() && selectedCategory == "Todas") "Destacados 🔥"
-                        else "${filteredHuariques.size} resultados",
+                        text = if (searchQuery.isEmpty() && selectedCategory == "Todas" && !viewModel.favoritesOnly) {
+                            "Destacados 🔥"
+                        } else {
+                            "${filteredHuariques.size} resultados encontrados"
+                        },
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = BrownDark
                     )
-                    TextButton(onClick = {}) {
-                        Text("Ver todos", color = OrangePrimary, fontSize = 13.sp)
+                    TextButton(
+                        onClick = {
+                            searchQuery = ""
+                            selectedCategory = "Todas"
+                        }
+                    ) {
+                        Text("Limpiar filtros", color = OrangePrimary, fontSize = 13.sp)
                     }
                 }
             }
@@ -377,9 +385,31 @@ fun HomeScreen(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("🔍", fontSize = 48.sp)
+
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("No encontramos huariques", fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                                Text("Intenta con otra búsqueda", color = TextSecondary, fontSize = 13.sp)
+
+                                Text(
+                                    text = "No encontramos huariques",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextPrimary
+                                )
+
+                                Text(
+                                    text = "Prueba con otro distrito, categoría o limpia los filtros.",
+                                    color = TextSecondary,
+                                    fontSize = 13.sp
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                TextButton(
+                                    onClick = {
+                                        searchQuery = ""
+                                        selectedCategory = "Todas"
+                                    }
+                                ) {
+                                    Text("Limpiar búsqueda", color = OrangePrimary)
+                                }
                             }
                         }
                     }
