@@ -33,7 +33,7 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notificaciones", color = SurfaceColor) },
+                title = { Text("Mis notificaciones", color = SurfaceColor) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = SurfaceColor)
@@ -60,12 +60,29 @@ fun NotificationsScreen(
 
                 viewModel.notifications.isEmpty() ->
                     Column(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text("🔔", fontSize = 44.sp)
+
                         Spacer(Modifier.height(8.dp))
-                        Text("No tienes notificaciones", color = TextSecondary)
+
+                        Text(
+                            text = "Aún no tienes notificaciones",
+                            color = BrownDark,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            text = "Aquí aparecerán novedades sobre huariques, promociones y reseñas.",
+                            color = TextSecondary,
+                            fontSize = 13.sp
+                        )
                     }
 
                 else -> LazyColumn(
@@ -92,11 +109,24 @@ fun NotificationsScreen(
                                         Text(n.date, color = TextSecondary, fontSize = 11.sp)
                                 }
                                 if (!n.isRead) {
-                                    Surface(
-                                        color = OrangePrimary,
-                                        shape = CircleShape
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Box(Modifier.size(10.dp))
+                                        Surface(
+                                            color = OrangePrimary,
+                                            shape = CircleShape
+                                        ) {
+                                            Box(Modifier.size(10.dp))
+                                        }
+
+                                        Spacer(Modifier.height(4.dp))
+
+                                        Text(
+                                            text = "Nuevo",
+                                            color = OrangePrimary,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
                                     }
                                 }
                             }
