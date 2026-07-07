@@ -68,3 +68,6 @@ data class CreateReportRequest(
 data class ForgotPasswordRequest(val email: String)
 
 data class ResetPasswordRequest(val email: String, val newPassword: String)
+
+/** Actualización del nombre de perfil del usuario (CRUD de cuenta). */
+data class UpdateProfileRequest(val name: String)

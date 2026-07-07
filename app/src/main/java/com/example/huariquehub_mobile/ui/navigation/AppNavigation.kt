@@ -16,6 +16,7 @@ import com.example.huariquehub_mobile.ui.screens.home.HuariqueDetailScreen
 import com.example.huariquehub_mobile.ui.screens.home.MapScreen
 import com.example.huariquehub_mobile.ui.screens.notifications.NotificationsScreen
 import com.example.huariquehub_mobile.ui.screens.preferences.PreferencesScreen
+import com.example.huariquehub_mobile.ui.screens.profile.ProfileScreen
 import com.example.huariquehub_mobile.ui.screens.owner.CreateEditHuariqueScreen
 import com.example.huariquehub_mobile.ui.screens.owner.CreateEditPromoScreen
 import com.example.huariquehub_mobile.ui.screens.owner.OwnerDashboardScreen
@@ -35,6 +36,7 @@ object Routes {
     const val MAP              = "map"
     const val NOTIFICATIONS    = "notifications"
     const val PREFERENCES      = "preferences"
+    const val PROFILE          = "profile"
     const val OWNER_DASHBOARD  = "owner_dashboard"
     const val OWNER_NEW        = "owner_new"
     const val OWNER_EDIT       = "owner_edit/{huariqueId}"
@@ -87,10 +89,7 @@ fun AppNavigation() {
         composable(Routes.HOME) {
             HomeScreen(
                 onHuariqueClick = { navController.navigate(Routes.huariqueDetail(it)) },
-                onProfileClick = {
-                    if (session?.isOwner == true) navController.navigate(Routes.OWNER_DASHBOARD)
-                    else navController.navigate(Routes.SUBSCRIPTION)
-                },
+                onProfileClick = { navController.navigate(Routes.PROFILE) },
                 onMapClick = { navController.navigate(Routes.MAP) },
                 onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onPreferencesClick = { navController.navigate(Routes.PREFERENCES) },
@@ -108,6 +107,20 @@ fun AppNavigation() {
 
         composable(Routes.PREFERENCES) {
             PreferencesScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.PROFILE) {
+            ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onLoggedOut = {
+                    session = null
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onGoToSubscription = { navController.navigate(Routes.SUBSCRIPTION) },
+                onGoToOwnerDashboard = { navController.navigate(Routes.OWNER_DASHBOARD) }
+            )
         }
 
         composable(

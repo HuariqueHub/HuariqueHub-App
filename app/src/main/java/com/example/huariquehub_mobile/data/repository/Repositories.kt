@@ -20,6 +20,9 @@ import com.example.huariquehub_mobile.data.remote.dto.ForgotPasswordRequest
 import com.example.huariquehub_mobile.data.remote.dto.LoginRequest
 import com.example.huariquehub_mobile.data.remote.dto.ResetPasswordRequest
 import com.example.huariquehub_mobile.data.remote.dto.UpdatePreferenceRequest
+import com.example.huariquehub_mobile.data.remote.dto.UpdateProfileRequest
+import com.example.huariquehub_mobile.data.remote.dto.UserDto
+import com.example.huariquehub_mobile.data.remote.SessionManager
 import com.example.huariquehub_mobile.data.model.AppNotification
 import com.example.huariquehub_mobile.data.model.Receipt
 import com.example.huariquehub_mobile.data.model.UserPreferences
@@ -51,6 +54,33 @@ class AuthRepository {
     /** Restablece la contraseña (US16). */
     suspend fun resetPassword(email: String, newPassword: String): String =
         api.resetPassword(ResetPasswordRequest(email.trim(), newPassword)).message
+
+    /** Obtiene el perfil del usuario (CRUD de cuenta). */
+    suspend fun getProfile(id: Int): UserSession =
+        api.getProfile(id).toSession()
+
+    /** Actualiza el nombre visible del usuario y refresca la sesión en memoria. */
+    suspend fun updateName(id: Int, name: String): UserSession {
+        val updated = api.updateProfile(id, UpdateProfileRequest(name.trim())).toSession()
+        // Conservamos el token vigente de la sesión activa.
+        SessionManager.session?.let { SessionManager.update(it.copy(name = updated.name)) }
+        return updated
+    }
+
+    /** Elimina la cuenta del usuario y cierra la sesión. */
+    suspend fun deleteAccount(id: Int): String {
+        val message = api.deleteAccount(id).message
+        SessionManager.clear()
+        return message
+    }
+
+    private fun UserDto.toSession() = UserSession(
+        id = id,
+        name = name,
+        email = email,
+        role = if (role.equals("owner", ignoreCase = true)) UserRole.OWNER else UserRole.CONSUMER,
+        token = SessionManager.token.orEmpty()
+    )
 
     private fun AuthResponseDto.toSession() = UserSession(
         id = id,
