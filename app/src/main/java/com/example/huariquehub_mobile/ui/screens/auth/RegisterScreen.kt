@@ -29,7 +29,7 @@ import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
 
 
-// selector de rol para consumer u owner
+// App de dueños: registro exclusivo de propietarios (sin selector de rol)
 // validación de contraseñas antes del registro
 private val RegisterBackground = Color(0xFFD4E8A0)
 
@@ -44,7 +44,6 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var selectedRole by remember { mutableStateOf("consumer") }
     var validationError by remember { mutableStateOf("") }
     val isLoading = viewModel.isLoading
     val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
@@ -93,34 +92,11 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Únete a la comunidad PuntoSabor",
+                        text = "Crea tu cuenta de dueño de huarique",
                         fontSize = 14.sp,
-                        color = TextSecondary
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // selector de rol
-                    Text("¿Cómo usarás PuntoSabor?", fontSize = 14.sp, color = TextSecondary)
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        RoleCard(
-                            label = "Consumidor",
-                            icon = "👤",
-                            description = "Busco huariques",
-                            selected = selectedRole == "consumer",
-                            modifier = Modifier.weight(1f),
-                            onClick = { selectedRole = "consumer" }
-                        )
-                        RoleCard(
-                            label = "Propietario",
-                            icon = "🏪",
-                            description = "Tengo un negocio",
-                            selected = selectedRole == "owner",
-                            modifier = Modifier.weight(1f),
-                            onClick = { selectedRole = "owner" }
-                        )
-                    }
-
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // nombre
@@ -221,8 +197,8 @@ fun RegisterScreen(
                                     validationError = "La contraseña debe tener al menos 8 caracteres"
                                 else -> {
                                     validationError = ""
-                                    val role = if (selectedRole == "owner") UserRole.OWNER else UserRole.CONSUMER
-                                    viewModel.register(name, email, password, role) { onRegisterSuccess(it) }
+                                    // App de dueños: el registro crea siempre una cuenta de propietario.
+                                    viewModel.register(name, email, password, UserRole.OWNER) { onRegisterSuccess(it) }
                                 }
                             }
                         },
@@ -248,36 +224,6 @@ fun RegisterScreen(
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
-@Composable
-private fun RoleCard(
-    label: String,
-    icon: String,
-    description: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) OrangeLight else MaterialTheme.colorScheme.surfaceVariant
-        ),
-        border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, OrangePrimary) else null
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(icon, fontSize = 28.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(label, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = if (selected) BrownDark else TextPrimary)
-            Text(description, fontSize = 11.sp, color = TextSecondary, textAlign = TextAlign.Center)
         }
     }
 }

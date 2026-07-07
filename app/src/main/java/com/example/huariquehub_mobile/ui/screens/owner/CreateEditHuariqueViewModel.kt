@@ -57,6 +57,7 @@ class CreateEditHuariqueViewModel : ViewModel() {
         address: String,
         priceText: String,
         description: String,
+        imageUrl: String,
         onDone: () -> Unit
     ) {
         viewModelScope.launch {
@@ -74,7 +75,8 @@ class CreateEditHuariqueViewModel : ViewModel() {
                         district = district,
                         address = address.ifBlank { null },
                         description = description.ifBlank { null },
-                        ownerId = SessionManager.userId
+                        ownerId = SessionManager.userId,
+                        imageUrl = imageUrl.trim().ifBlank { null }
                     )
                 } else {
                     val patch = mutableMapOf<String, Any?>(
@@ -86,6 +88,7 @@ class CreateEditHuariqueViewModel : ViewModel() {
                     )
                     if (address.isNotBlank()) patch["address"] = address
                     if (description.isNotBlank()) patch["description"] = description
+                    if (imageUrl.isNotBlank()) patch["imageUrl"] = imageUrl.trim()
                     repo.updateHuarique(id, patch)
                 }
             }.onSuccess { onDone() }

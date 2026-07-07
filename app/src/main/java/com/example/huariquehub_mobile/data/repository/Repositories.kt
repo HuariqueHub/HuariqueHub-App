@@ -167,7 +167,8 @@ class HuariqueRepository {
         district: String,
         address: String?,
         description: String?,
-        ownerId: Int?
+        ownerId: Int?,
+        imageUrl: String? = null
     ): Huarique = api.createHuarique(
         CreateHuariqueRequest(
             name = name,
@@ -177,7 +178,8 @@ class HuariqueRepository {
             district = district,
             address = address,
             description = description,
-            ownerId = ownerId
+            ownerId = ownerId,
+            imageUrl = imageUrl
         )
     ).toModel()
 

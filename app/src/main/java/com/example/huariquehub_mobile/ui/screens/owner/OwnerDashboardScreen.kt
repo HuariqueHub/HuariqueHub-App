@@ -26,7 +26,7 @@ import com.example.huariquehub_mobile.ui.theme.*
 @Composable
 fun OwnerDashboardScreen(
     ownerId: Int,
-    onBack: () -> Unit,
+    onProfile: () -> Unit,
     onAddHuarique: () -> Unit,
     onEditHuarique: (Int) -> Unit,
     onManagePromos: () -> Unit = {},
@@ -51,9 +51,9 @@ fun OwnerDashboardScreen(
                         Text("Gestiona tus huariques", fontSize = 12.sp, color = SurfaceColor.copy(alpha = 0.8f))
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = SurfaceColor)
+                actions = {
+                    IconButton(onClick = onProfile) {
+                        Icon(Icons.Default.Person, "Mi perfil", tint = SurfaceColor)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BrownDark)
