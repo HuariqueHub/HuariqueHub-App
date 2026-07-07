@@ -12,11 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.huariquehub_mobile.ui.components.HuariqueImage
 import com.example.huariquehub_mobile.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +42,7 @@ fun CreateEditHuariqueScreen(
     var openAt by remember { mutableStateOf("") }
     var closeAt by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var imageUrl by remember { mutableStateOf("") }
     var delivery by remember { mutableStateOf(false) }
     var takeaway by remember { mutableStateOf(false) }
     var dineIn by remember { mutableStateOf(true) }
@@ -57,6 +60,7 @@ fun CreateEditHuariqueScreen(
             phone = it.phone
             price = if (it.price > 0) "%.0f".format(it.price) else ""
             description = it.description
+            imageUrl = it.imageUrl
             delivery = it.deliveryAvailable
             takeaway = it.takeawayAvailable
             dineIn = it.dineInAvailable
@@ -231,6 +235,32 @@ fun CreateEditHuariqueScreen(
                 colors = fieldColors()
             )
 
+            // Sección: Foto del local
+            SectionLabel("Foto del local")
+
+            FormField(label = "URL de la imagen") {
+                OutlinedTextField(
+                    value = imageUrl,
+                    onValueChange = { imageUrl = it },
+                    placeholder = { Text("https://...") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = fieldColors()
+                )
+            }
+            // Previsualización de la imagen que verán los exploradores.
+            HuariqueImage(
+                name = name.ifBlank { null },
+                url = imageUrl.ifBlank { null },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                emojiSize = 44.sp
+            )
+
             // Sección: Servicios
             SectionLabel("Servicios disponibles")
 
@@ -268,7 +298,8 @@ fun CreateEditHuariqueScreen(
                                 district = district,
                                 address = address,
                                 priceText = price,
-                                description = description
+                                description = description,
+                                imageUrl = imageUrl
                             ) { onSave() }
                         }
                     }

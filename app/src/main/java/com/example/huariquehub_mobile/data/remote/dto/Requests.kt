@@ -23,7 +23,8 @@ data class CreateHuariqueRequest(
     val address: String? = null,
     val phone: String? = null,
     val description: String? = null,
-    val ownerId: Int? = null
+    val ownerId: Int? = null,
+    val imageUrl: String? = null
 )
 
 data class CreateReviewRequest(

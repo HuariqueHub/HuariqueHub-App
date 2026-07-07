@@ -8,6 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.huariquehub_mobile.data.model.UserRole
 import com.example.huariquehub_mobile.data.model.UserSession
+import com.example.huariquehub_mobile.data.remote.SessionManager
+import com.example.huariquehub_mobile.ui.screens.auth.AccessDeniedScreen
 import com.example.huariquehub_mobile.ui.screens.auth.ForgotPasswordScreen
 import com.example.huariquehub_mobile.ui.screens.auth.LoginScreen
 import com.example.huariquehub_mobile.ui.screens.auth.RegisterScreen
@@ -31,6 +33,7 @@ object Routes {
     const val LOGIN            = "login"
     const val REGISTER         = "register"
     const val FORGOT_PASSWORD  = "forgot_password"
+    const val NOT_OWNER        = "not_owner"
     const val HOME             = "home"
     const val HUARIQUE_DETAIL  = "huarique_detail/{huariqueId}"
     const val MAP              = "map"
@@ -61,7 +64,10 @@ fun AppNavigation() {
             LoginScreen(
                 onLoginSuccess = { loggedSession ->
                     session = loggedSession
-                    navController.navigate(Routes.HOME) {
+                    // App de dueños: solo los propietarios acceden al panel; a
+                    // cualquier otra cuenta le mostramos un mensaje amable.
+                    val dest = if (loggedSession.isOwner) Routes.OWNER_DASHBOARD else Routes.NOT_OWNER
+                    navController.navigate(dest) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
@@ -78,11 +84,24 @@ fun AppNavigation() {
             RegisterScreen(
                 onRegisterSuccess = { newSession ->
                     session = newSession
-                    navController.navigate(Routes.HOME) {
+                    // El registro de esta app crea siempre una cuenta de dueño.
+                    navController.navigate(Routes.OWNER_DASHBOARD) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
                 onNavigateToLogin = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.NOT_OWNER) {
+            AccessDeniedScreen(
+                onLogout = {
+                    SessionManager.clear()
+                    session = null
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -136,7 +155,7 @@ fun AppNavigation() {
         composable(Routes.OWNER_DASHBOARD) {
             OwnerDashboardScreen(
                 ownerId = session?.id ?: 2,
-                onBack = { navController.popBackStack() },
+                onProfile = { navController.navigate(Routes.PROFILE) },
                 onAddHuarique = { navController.navigate(Routes.OWNER_NEW) },
                 onEditHuarique = { navController.navigate(Routes.ownerEdit(it)) },
                 onManagePromos = { navController.navigate(Routes.OWNER_PROMOS) },

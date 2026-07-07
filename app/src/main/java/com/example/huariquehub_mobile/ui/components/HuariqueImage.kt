@@ -43,8 +43,10 @@ private val huariqueImageMap: Map<String, Int> = mapOf(
 )
 
 /**
- * Imagen de un huarique. Primero busca por nombre en el mapa local de drawables.
- * Si no encuentra, intenta cargar desde url. Si tampoco, muestra placeholder. Asi aseguramos una experiencia consistente.
+ * Imagen de un huarique. Prioriza la `imageUrl` del backend (la que el dueño
+ * define para su local); si no hay, cae al mapa local de drawables como respaldo
+ * de demo y, si tampoco, muestra un placeholder. Así la imagen que sube el dueño
+ * manda, y seguimos teniendo una experiencia consistente sin conexión.
  */
 @Composable
 fun HuariqueImage(
@@ -56,22 +58,34 @@ fun HuariqueImage(
     val localRes = name?.let { huariqueImageMap[it] }
 
     when {
+        !url.isNullOrBlank() -> {
+            coil.compose.SubcomposeAsyncImage(
+                model = url,
+                contentDescription = name,
+                contentScale = ContentScale.Crop,
+                modifier = modifier,
+                // Si la descarga falla, caemos al drawable local (si existe) o al placeholder.
+                loading = { ImagePlaceholder(Modifier.fillMaxSize(), emojiSize) },
+                error = {
+                    if (localRes != null) {
+                        Image(
+                            painter = painterResource(id = localRes),
+                            contentDescription = name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        ImagePlaceholder(Modifier.fillMaxSize(), emojiSize)
+                    }
+                }
+            )
+        }
         localRes != null -> {
             Image(
                 painter = painterResource(id = localRes),
                 contentDescription = name,
                 contentScale = ContentScale.Crop,
                 modifier = modifier
-            )
-        }
-        !url.isNullOrBlank() -> {
-            coil.compose.SubcomposeAsyncImage(
-                model = url,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = modifier,
-                loading = { ImagePlaceholder(Modifier.fillMaxSize(), emojiSize) },
-                error = { ImagePlaceholder(Modifier.fillMaxSize(), emojiSize) }
             )
         }
         else -> ImagePlaceholder(modifier, emojiSize)
