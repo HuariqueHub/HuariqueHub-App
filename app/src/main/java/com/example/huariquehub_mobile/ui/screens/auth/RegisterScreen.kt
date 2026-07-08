@@ -22,15 +22,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.huariquehub_mobile.data.model.UserRole
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.R
+import com.example.huariquehub_mobile.data.model.UserRole
 import com.example.huariquehub_mobile.data.model.UserSession
 import com.example.huariquehub_mobile.ui.theme.*
 
-
-// App de dueños: registro exclusivo de propietarios (sin selector de rol)
-// validación de contraseñas antes del registro
 private val RegisterBackground = Color(0xFFD4E8A0)
 
 @Composable
@@ -45,6 +42,7 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf("") }
+
     val isLoading = viewModel.isLoading
     val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
 
@@ -61,7 +59,6 @@ fun RegisterScreen(
         ) {
             Spacer(modifier = Modifier.height(48.dp))
 
-            // logo
             Image(
                 painter = painterResource(id = R.drawable.logo_puntosabor),
                 contentDescription = "PuntoSabor logo",
@@ -90,21 +87,33 @@ fun RegisterScreen(
                         fontWeight = FontWeight.Bold,
                         color = BrownDark
                     )
+
                     Spacer(modifier = Modifier.height(4.dp))
+
                     Text(
                         text = "Crea tu cuenta de dueño de huarique",
                         fontSize = 14.sp,
                         color = TextSecondary,
                         textAlign = TextAlign.Center
                     )
+
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // nombre
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it; validationError = ""; viewModel.clearError() },
+                        onValueChange = {
+                            name = it
+                            validationError = ""
+                            viewModel.clearError()
+                        },
                         label = { Text("Nombre completo") },
-                        leadingIcon = { Icon(Icons.Default.Person, null, tint = OrangePrimary) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = null,
+                                tint = OrangePrimary
+                            )
+                        },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -114,14 +123,24 @@ fun RegisterScreen(
                             cursorColor = OrangePrimary
                         )
                     )
+
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // email
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it; validationError = ""; viewModel.clearError() },
+                        onValueChange = {
+                            email = it
+                            validationError = ""
+                            viewModel.clearError()
+                        },
                         label = { Text("Correo electrónico") },
-                        leadingIcon = { Icon(Icons.Default.Email, null, tint = OrangePrimary) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Email,
+                                contentDescription = null,
+                                tint = OrangePrimary
+                            )
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -132,23 +151,42 @@ fun RegisterScreen(
                             cursorColor = OrangePrimary
                         )
                     )
+
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // contraseña
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; validationError = ""; viewModel.clearError() },
+                        onValueChange = {
+                            password = it
+                            validationError = ""
+                            viewModel.clearError()
+                        },
                         label = { Text("Contraseña") },
-                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = OrangePrimary) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = OrangePrimary
+                            )
+                        },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
-                                    if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    null, tint = TextSecondary
+                                    imageVector = if (passwordVisible) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = null,
+                                    tint = TextSecondary
                                 )
                             }
                         },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        visualTransformation = if (passwordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -159,14 +197,24 @@ fun RegisterScreen(
                             cursorColor = OrangePrimary
                         )
                     )
+
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // confirmar contraseña
                     OutlinedTextField(
                         value = confirmPassword,
-                        onValueChange = { confirmPassword = it; validationError = ""; viewModel.clearError() },
+                        onValueChange = {
+                            confirmPassword = it
+                            validationError = ""
+                            viewModel.clearError()
+                        },
                         label = { Text("Confirmar contraseña") },
-                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = OrangePrimary) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = OrangePrimary
+                            )
+                        },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
@@ -181,48 +229,101 @@ fun RegisterScreen(
 
                     if (errorMessage.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(errorMessage, color = ErrorRed, fontSize = 13.sp, modifier = Modifier.fillMaxWidth())
+
+                        Text(
+                            text = errorMessage,
+                            color = ErrorRed,
+                            fontSize = 13.sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = {
+                            val cleanName = name.trim()
+                            val cleanEmail = email.trim()
+
                             when {
-                                name.isBlank() || email.isBlank() || password.isBlank() ->
+                                cleanName.isBlank() ||
+                                        cleanEmail.isBlank() ||
+                                        password.isBlank() ||
+                                        confirmPassword.isBlank() -> {
                                     validationError = "Completa todos los campos"
-                                password != confirmPassword ->
+                                }
+
+                                !cleanEmail.contains("@") || !cleanEmail.contains(".") -> {
+                                    validationError = "Ingresa un correo electrónico válido"
+                                }
+
+                                password != confirmPassword -> {
                                     validationError = "Las contraseñas no coinciden"
-                                password.length < 8 ->
+                                }
+
+                                password.length < 8 -> {
                                     validationError = "La contraseña debe tener al menos 8 caracteres"
+                                }
+
                                 else -> {
                                     validationError = ""
-                                    // App de dueños: el registro crea siempre una cuenta de propietario.
-                                    viewModel.register(name, email, password, UserRole.OWNER) { onRegisterSuccess(it) }
+
+                                    viewModel.register(
+                                        cleanName,
+                                        cleanEmail,
+                                        password,
+                                        UserRole.OWNER
+                                    ) {
+                                        onRegisterSuccess(it)
+                                    }
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
                         enabled = !isLoading
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = SurfaceColor, modifier = Modifier.size(20.dp))
+                            CircularProgressIndicator(
+                                color = SurfaceColor,
+                                modifier = Modifier.size(20.dp)
+                            )
                         } else {
-                            Text("Crear Cuenta", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = "Crear Cuenta",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("¿Ya tienes cuenta? ", color = TextSecondary, fontSize = 14.sp)
-                        TextButton(onClick = onNavigateToLogin, contentPadding = PaddingValues(0.dp)) {
-                            Text("Inicia sesión", color = OrangePrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(
+                            text = "¿Ya tienes cuenta? ",
+                            color = TextSecondary,
+                            fontSize = 14.sp
+                        )
+
+                        TextButton(
+                            onClick = onNavigateToLogin,
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                text = "Inicia sesión",
+                                color = OrangePrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
                         }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
