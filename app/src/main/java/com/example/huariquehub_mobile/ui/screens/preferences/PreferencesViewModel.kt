@@ -35,6 +35,8 @@ class PreferencesViewModel : ViewModel() {
         preferredCategory = v.take(60)
         saved = false
     }
+
+    /** Permite ingresar solo números y punto decimal para el presupuesto. */
     fun onBudgetChange(v: String) {
         maxBudget = v.filter { it.isDigit() || it == '.' }.take(10)
         saved = false
@@ -45,6 +47,7 @@ class PreferencesViewModel : ViewModel() {
     }
     fun onNotificationsChange(v: Boolean) { notificationsEnabled = v; saved = false }
 
+    /** Recupera las preferencias guardadas del usuario autenticado. */
     fun load() {
         val userId = SessionManager.userId ?: return
         viewModelScope.launch {
@@ -62,6 +65,7 @@ class PreferencesViewModel : ViewModel() {
         }
     }
 
+    /** Guarda las preferencias seleccionadas por el usuario. */
     fun save() {
         val userId = SessionManager.userId ?: return
         viewModelScope.launch {
