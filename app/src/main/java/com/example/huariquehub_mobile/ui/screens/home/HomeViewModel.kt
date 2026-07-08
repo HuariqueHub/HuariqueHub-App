@@ -13,7 +13,6 @@ import com.example.huariquehub_mobile.data.repository.FavoriteRepository
 import com.example.huariquehub_mobile.data.repository.HuariqueRepository
 import kotlinx.coroutines.launch
 
-
 /** Carga huariques, sugerencias y permite filtrar por favoritos. */
 class HomeViewModel : ViewModel() {
 
@@ -22,10 +21,13 @@ class HomeViewModel : ViewModel() {
 
     var isLoading by mutableStateOf(false)
         private set
+
     var error by mutableStateOf<String?>(null)
         private set
+
     var huariques by mutableStateOf<List<Huarique>>(emptyList())
         private set
+
     var categories by mutableStateOf<List<Category>>(listOf(Category(0, "Todas", "🍽️")))
         private set
 
@@ -45,12 +47,15 @@ class HomeViewModel : ViewModel() {
     var suggestions by mutableStateOf<List<Huarique>>(emptyList())
         private set
 
-    init { load() }
+    init {
+        load()
+    }
 
     fun load() {
         viewModelScope.launch {
             isLoading = true
             error = null
+
             runCatching {
                 val huariquesResult =
                     if (nearbyOnly) repo.getNearbyHuariques() else repo.getHuariques()
@@ -59,7 +64,10 @@ class HomeViewModel : ViewModel() {
             }.onSuccess { (h, c) ->
                 huariques = h
                 categories = listOf(Category(0, "Todas", "🍽️")) + c
-            }.onFailure { error = it.toUserMessage() }
+            }.onFailure {
+                error = it.toUserMessage()
+            }
+
             isLoading = false
             loadFavorites()
             loadSuggestions()
@@ -68,17 +76,25 @@ class HomeViewModel : ViewModel() {
 
     private fun loadFavorites() {
         val userId = SessionManager.userId ?: return
+
         viewModelScope.launch {
-            runCatching { favoritesRepo.getFavoriteIds(userId) }
-                .onSuccess { favoriteIds = it }
+            runCatching {
+                favoritesRepo.getFavoriteIds(userId)
+            }.onSuccess {
+                favoriteIds = it
+            }
         }
     }
 
     private fun loadSuggestions() {
         val userId = SessionManager.userId ?: return
+
         viewModelScope.launch {
-            runCatching { repo.getSuggestions(userId) }
-                .onSuccess { suggestions = it }
+            runCatching {
+                repo.getSuggestions(userId)
+            }.onSuccess {
+                suggestions = it
+            }
         }
     }
 
@@ -93,6 +109,18 @@ class HomeViewModel : ViewModel() {
         favoritesOnly = !favoritesOnly
     }
 
+    /** Limpia los filtros rápidos de la pantalla principal. */
+    fun clearFilters() {
+        val shouldReload = nearbyOnly
+
+        nearbyOnly = false
+        favoritesOnly = false
+
+        if (shouldReload) {
+            load()
+        }
+    }
+
     /**
      * Marca/desmarca un huarique como favorito (US03). Actualiza el estado
      * local de inmediato y revierte si la petición al backend falla.
@@ -100,16 +128,29 @@ class HomeViewModel : ViewModel() {
     fun toggleFavorite(huariqueId: Int) {
         val userId = SessionManager.userId ?: return
         val wasFavorite = huariqueId in favoriteIds
-        favoriteIds = if (wasFavorite) favoriteIds - huariqueId else favoriteIds + huariqueId
+
+        favoriteIds = if (wasFavorite) {
+            favoriteIds - huariqueId
+        } else {
+            favoriteIds + huariqueId
+        }
+
         viewModelScope.launch {
             val result = runCatching {
-                if (wasFavorite) favoritesRepo.remove(userId, huariqueId)
-                else favoritesRepo.add(userId, huariqueId)
+                if (wasFavorite) {
+                    favoritesRepo.remove(userId, huariqueId)
+                } else {
+                    favoritesRepo.add(userId, huariqueId)
+                }
             }
+
             if (result.isFailure) {
                 // Revertir el cambio optimista ante un error de red.
-                favoriteIds =
-                    if (wasFavorite) favoriteIds + huariqueId else favoriteIds - huariqueId
+                favoriteIds = if (wasFavorite) {
+                    favoriteIds + huariqueId
+                } else {
+                    favoriteIds - huariqueId
+                }
             }
         }
     }

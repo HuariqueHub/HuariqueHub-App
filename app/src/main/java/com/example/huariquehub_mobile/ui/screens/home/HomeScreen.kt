@@ -50,8 +50,10 @@ fun HomeScreen(
                 huarique.name.contains(searchQuery, ignoreCase = true) ||
                 huarique.district.contains(searchQuery, ignoreCase = true) ||
                 huarique.category.contains(searchQuery, ignoreCase = true)
+
         val matchesCategory = selectedCategory == "Todas" || huarique.category == selectedCategory
         val matchesFavorites = !viewModel.favoritesOnly || huarique.id in viewModel.favoriteIds
+
         matchesSearch && matchesCategory && matchesFavorites
     }
 
@@ -65,7 +67,9 @@ fun HomeScreen(
                             contentDescription = "logo",
                             modifier = Modifier.size(32.dp)
                         )
+
                         Spacer(modifier = Modifier.width(8.dp))
+
                         Column {
                             Text(
                                 text = "PuntoSabor",
@@ -73,6 +77,7 @@ fun HomeScreen(
                                 fontSize = 20.sp,
                                 color = BrownDark
                             )
+
                             Text(
                                 text = "Lima, Perú",
                                 fontSize = 12.sp,
@@ -83,14 +88,29 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onMapClick) {
-                        Icon(Icons.Default.Map, contentDescription = "Ver en mapa", tint = BrownDark)
+                        Icon(
+                            Icons.Default.Map,
+                            contentDescription = "Ver en mapa",
+                            tint = BrownDark
+                        )
                     }
+
                     IconButton(onClick = onNotificationsClick) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = BrownDark)
+                        Icon(
+                            Icons.Default.Notifications,
+                            contentDescription = "Notificaciones",
+                            tint = BrownDark
+                        )
                     }
+
                     IconButton(onClick = onPreferencesClick) {
-                        Icon(Icons.Default.Tune, contentDescription = "Preferencias", tint = BrownDark)
+                        Icon(
+                            Icons.Default.Tune,
+                            contentDescription = "Preferencias",
+                            tint = BrownDark
+                        )
                     }
+
                     IconButton(onClick = onProfileClick) {
                         Box(
                             modifier = Modifier
@@ -99,7 +119,11 @@ fun HomeScreen(
                                 .background(BrownDark.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Person, contentDescription = "Perfil", tint = BrownDark)
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Perfil",
+                                tint = BrownDark
+                            )
                         }
                     }
                 },
@@ -121,7 +145,10 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(HomeBackground, HomeBackground.copy(alpha = 0.0f))
+                                colors = listOf(
+                                    HomeBackground,
+                                    HomeBackground.copy(alpha = 0.0f)
+                                )
                             )
                         )
                         .padding(horizontal = 16.dp, vertical = 20.dp)
@@ -132,24 +159,41 @@ fun HomeScreen(
                             fontSize = 16.sp,
                             color = BrownDark.copy(alpha = 0.9f)
                         )
+
                         Text(
                             text = "Huariques cerca de ti",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = BrownDark
                         )
+
                         Spacer(modifier = Modifier.height(14.dp))
 
                         // barra de búsqueda
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Buscar huariques, distritos...", color = TextSecondary) },
-                            leadingIcon = { Icon(Icons.Default.Search, null, tint = OrangePrimary) },
+                            placeholder = {
+                                Text(
+                                    "Buscar huariques, distritos...",
+                                    color = TextSecondary
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = OrangePrimary
+                                )
+                            },
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
                                     IconButton(onClick = { searchQuery = "" }) {
-                                        Icon(Icons.Default.Close, null, tint = TextSecondary)
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = null,
+                                            tint = TextSecondary
+                                        )
                                     }
                                 }
                             },
@@ -182,13 +226,31 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text("🏪", fontSize = 28.sp)
+
                             Spacer(modifier = Modifier.width(12.dp))
+
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Eres propietario", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = SurfaceColor)
-                                Text("Gestiona tus locales y promos", fontSize = 12.sp, color = SurfaceColor.copy(alpha = 0.75f))
+                                Text(
+                                    "Eres propietario",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp,
+                                    color = SurfaceColor
+                                )
+
+                                Text(
+                                    "Gestiona tus locales y promos",
+                                    fontSize = 12.sp,
+                                    color = SurfaceColor.copy(alpha = 0.75f)
+                                )
                             }
+
                             TextButton(onClick = onProfileClick) {
-                                Text("Mi panel", color = OrangeDark, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                Text(
+                                    "Mi panel",
+                                    color = OrangeDark,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp
+                                )
                             }
                         }
                     }
@@ -206,6 +268,7 @@ fun HomeScreen(
                             color = BrownDark,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
+
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -227,7 +290,9 @@ fun HomeScreen(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
+
                                         Spacer(Modifier.height(2.dp))
+
                                         Text(
                                             "${s.category} · ${s.district}",
                                             color = TextSecondary,
@@ -235,11 +300,24 @@ fun HomeScreen(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
+
                                         Spacer(Modifier.height(4.dp))
+
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Star, null, tint = StarYellow, modifier = Modifier.size(14.dp))
+                                            Icon(
+                                                Icons.Default.Star,
+                                                contentDescription = null,
+                                                tint = StarYellow,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+
                                             Spacer(Modifier.width(2.dp))
-                                            Text("%.1f".format(s.rating), fontSize = 12.sp, color = BrownDark)
+
+                                            Text(
+                                                "%.1f".format(s.rating),
+                                                fontSize = 12.sp,
+                                                color = BrownDark
+                                            )
                                         }
                                     }
                                 }
@@ -259,6 +337,7 @@ fun HomeScreen(
                         color = BrownDark,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
+
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -287,7 +366,11 @@ fun HomeScreen(
                         onClick = { viewModel.toggleNearby() },
                         label = { Text("Cerca de mí") },
                         leadingIcon = {
-                            Icon(Icons.Default.NearMe, null, modifier = Modifier.size(16.dp))
+                            Icon(
+                                Icons.Default.NearMe,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
                         },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = OrangePrimary,
@@ -295,6 +378,7 @@ fun HomeScreen(
                             selectedLeadingIconColor = SurfaceColor
                         )
                     )
+
                     FilterChip(
                         selected = viewModel.favoritesOnly,
                         onClick = { viewModel.toggleFavoritesOnly() },
@@ -303,7 +387,7 @@ fun HomeScreen(
                             Icon(
                                 if (viewModel.favoritesOnly) Icons.Default.Favorite
                                 else Icons.Default.FavoriteBorder,
-                                null,
+                                contentDescription = null,
                                 modifier = Modifier.size(16.dp)
                             )
                         },
@@ -326,7 +410,12 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (searchQuery.isEmpty() && selectedCategory == "Todas" && !viewModel.favoritesOnly) {
+                        text = if (
+                            searchQuery.isEmpty() &&
+                            selectedCategory == "Todas" &&
+                            !viewModel.favoritesOnly &&
+                            !viewModel.nearbyOnly
+                        ) {
                             "Destacados 🔥"
                         } else {
                             "${filteredHuariques.size} resultados encontrados"
@@ -335,13 +424,19 @@ fun HomeScreen(
                         fontSize = 16.sp,
                         color = BrownDark
                     )
+
                     TextButton(
                         onClick = {
                             searchQuery = ""
                             selectedCategory = "Todas"
+                            viewModel.clearFilters()
                         }
                     ) {
-                        Text("Limpiar filtros", color = OrangePrimary, fontSize = 13.sp)
+                        Text(
+                            "Limpiar filtros",
+                            color = OrangePrimary,
+                            fontSize = 13.sp
+                        )
                     }
                 }
             }
@@ -351,36 +446,56 @@ fun HomeScreen(
                 viewModel.isLoading && viewModel.huariques.isEmpty() -> {
                     item {
                         Box(
-                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(color = OrangePrimary)
                         }
                     }
                 }
+
                 viewModel.error != null && viewModel.huariques.isEmpty() -> {
                     item {
                         Box(
-                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("⚠️", fontSize = 48.sp)
+
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(viewModel.error ?: "", color = TextPrimary, fontWeight = FontWeight.SemiBold)
+
+                                Text(
+                                    viewModel.error ?: "",
+                                    color = TextPrimary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+
                                 Spacer(modifier = Modifier.height(8.dp))
+
                                 Button(
                                     onClick = { viewModel.load() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
-                                ) { Text("Reintentar") }
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = OrangePrimary
+                                    )
+                                ) {
+                                    Text("Reintentar")
+                                }
                             }
                         }
                     }
                 }
+
                 filteredHuariques.isEmpty() -> {
                     item {
                         Box(
-                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -406,14 +521,19 @@ fun HomeScreen(
                                     onClick = {
                                         searchQuery = ""
                                         selectedCategory = "Todas"
+                                        viewModel.clearFilters()
                                     }
                                 ) {
-                                    Text("Limpiar búsqueda", color = OrangePrimary)
+                                    Text(
+                                        "Limpiar búsqueda",
+                                        color = OrangePrimary
+                                    )
                                 }
                             }
                         }
                     }
                 }
+
                 else -> {
                     items(filteredHuariques) { huarique ->
                         HuariqueCard(
@@ -440,7 +560,14 @@ fun CategoryChip(
         shape = RoundedCornerShape(20.dp),
         color = if (selected) OrangePrimary else SurfaceColor,
         shadowElevation = if (selected) 4.dp else 1.dp,
-        border = if (!selected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)) else null
+        border = if (!selected) {
+            androidx.compose.foundation.BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+            )
+        } else {
+            null
+        }
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -448,6 +575,7 @@ fun CategoryChip(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(category.icon, fontSize = 16.sp)
+
             Text(
                 text = category.name,
                 fontSize = 13.sp,
@@ -488,6 +616,7 @@ fun HuariqueCard(
                     modifier = Modifier.fillMaxSize(),
                     emojiSize = 56.sp
                 )
+
                 // badge categoría
                 Surface(
                     modifier = Modifier
@@ -504,17 +633,24 @@ fun HuariqueCard(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+
                 // botón favorito
                 IconButton(
                     onClick = onToggleFavorite,
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     Icon(
-                        if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                        if (isFavorite) Icons.Default.Favorite
+                        else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) {
+                            "Quitar de favoritos"
+                        } else {
+                            "Agregar a favoritos"
+                        },
                         tint = if (isFavorite) ErrorRed else SurfaceColor
                     )
                 }
+
                 // estado abierto/cerrado
                 if (status != OpenStatus.UNKNOWN) {
                     Surface(
@@ -522,7 +658,11 @@ fun HuariqueCard(
                             .align(Alignment.BottomStart)
                             .padding(10.dp),
                         shape = RoundedCornerShape(8.dp),
-                        color = if (status == OpenStatus.OPEN) YellowGreen else BrownDark.copy(alpha = 0.85f)
+                        color = if (status == OpenStatus.OPEN) {
+                            YellowGreen
+                        } else {
+                            BrownDark.copy(alpha = 0.85f)
+                        }
                     ) {
                         Text(
                             status.label,
@@ -550,24 +690,44 @@ fun HuariqueCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Star, null, tint = StarYellow, modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            tint = StarYellow,
+                            modifier = Modifier.size(16.dp)
+                        )
+
                         Spacer(modifier = Modifier.width(2.dp))
+
                         Text(
                             text = "%.1f".format(huarique.rating),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
                             color = BrownDark
                         )
-                        Text(" (${huarique.reviewCount})", fontSize = 12.sp, color = TextSecondary)
+
+                        Text(
+                            " (${huarique.reviewCount})",
+                            fontSize = 12.sp,
+                            color = TextSecondary
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, null, tint = OrangePrimary, modifier = Modifier.size(14.dp))
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = OrangePrimary,
+                        modifier = Modifier.size(14.dp)
+                    )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         "${huarique.district} · ${huarique.address}",
                         fontSize = 13.sp,
@@ -580,20 +740,37 @@ fun HuariqueCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Schedule, null, tint = OrangePrimary, modifier = Modifier.size(14.dp))
+                    Icon(
+                        Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = OrangePrimary,
+                        modifier = Modifier.size(14.dp)
+                    )
+
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(huarique.hours, fontSize = 13.sp, color = TextSecondary)
+
+                    Text(
+                        huarique.hours,
+                        fontSize = 13.sp,
+                        color = TextSecondary
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Button(
                     onClick = onClick,
-                    modifier = Modifier.fillMaxWidth().height(40.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
                 ) {
-                    Text("Ver detalles", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Ver detalles",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
