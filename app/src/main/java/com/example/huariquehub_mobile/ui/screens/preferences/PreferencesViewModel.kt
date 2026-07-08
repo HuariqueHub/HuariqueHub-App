@@ -10,6 +10,7 @@ import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.PreferenceRepository
 import kotlinx.coroutines.launch
 
+/** Carga y persiste las preferencias de categoría y presupuesto del usuario. */
 class PreferencesViewModel : ViewModel() {
 
     private val repo = PreferenceRepository()
@@ -30,9 +31,18 @@ class PreferencesViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
 
-    fun onCategoryChange(v: String) { preferredCategory = v; saved = false }
-    fun onBudgetChange(v: String) { maxBudget = v.filter { it.isDigit() || it == '.' }; saved = false }
-    fun onDistrictChange(v: String) { preferredDistrict = v; saved = false }
+    fun onCategoryChange(v: String) {
+        preferredCategory = v.take(60)
+        saved = false
+    }
+    fun onBudgetChange(v: String) {
+        maxBudget = v.filter { it.isDigit() || it == '.' }.take(10)
+        saved = false
+    }
+    fun onDistrictChange(v: String) {
+        preferredDistrict = v.take(60)
+        saved = false
+    }
     fun onNotificationsChange(v: Boolean) { notificationsEnabled = v; saved = false }
 
     fun load() {

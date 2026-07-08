@@ -319,7 +319,7 @@ fun HuariqueDetailScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
-                items(viewModel.promos) { promo ->
+                items(viewModel.promos, key = { it.id }) { promo ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -403,7 +403,7 @@ fun HuariqueDetailScreen(
                     }
                 }
             } else {
-                items(reviews) { review ->
+                items(reviews, key = { it.id }) { review ->
                     ReviewCard(review = review)
                 }
             }

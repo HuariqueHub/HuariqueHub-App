@@ -11,6 +11,7 @@ import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.NotificationRepository
 import kotlinx.coroutines.launch
 
+/** Lista y marca como leídas las notificaciones del usuario actual. */
 class NotificationsViewModel : ViewModel() {
 
     private val repo = NotificationRepository()
@@ -28,7 +29,11 @@ class NotificationsViewModel : ViewModel() {
             isLoading = true
             error = null
             runCatching { repo.getNotifications(userId) }
-                .onSuccess { notifications = it }
+                .onSuccess {
+                    notifications = it.sortedWith(
+                        compareBy<AppNotification> { it.isRead }.thenByDescending { it.id }
+                    )
+                }
                 .onFailure { error = it.toUserMessage() }
             isLoading = false
         }

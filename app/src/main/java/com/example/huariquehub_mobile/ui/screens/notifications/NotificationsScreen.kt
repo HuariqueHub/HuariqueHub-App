@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -32,7 +33,7 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notificaciones", color = SurfaceColor) },
+                title = { Text("Mis notificaciones", color = SurfaceColor) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = SurfaceColor)
@@ -43,25 +44,52 @@ fun NotificationsScreen(
         }
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding).padding(top = 8.dp)) {
+            viewModel.error?.let { message ->
+                Text(
+                    message,
+                    color = ErrorRed,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
             when {
                 viewModel.isLoading && viewModel.notifications.isEmpty() ->
                     CircularProgressIndicator(color = OrangePrimary, modifier = Modifier.align(Alignment.Center))
 
                 viewModel.notifications.isEmpty() ->
                     Column(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text("🔔", fontSize = 44.sp)
+
                         Spacer(Modifier.height(8.dp))
-                        Text("No tienes notificaciones", color = TextSecondary)
+
+                        Text(
+                            text = "Aún no tienes notificaciones",
+                            color = BrownDark,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            text = "Aquí aparecerán novedades sobre huariques, promociones y reseñas.",
+                            color = TextSecondary,
+                            fontSize = 13.sp
+                        )
                     }
 
                 else -> LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(viewModel.notifications) { n ->
+                    items(viewModel.notifications, key = { it.id }) { n ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -72,7 +100,7 @@ fun NotificationsScreen(
                             )
                         ) {
                             Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Notifications, null, tint = OrangePrimary)
+                                Icon(Icons.Default.Notifications, "Notificación", tint = OrangePrimary)
                                 Spacer(Modifier.width(12.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(n.title, fontWeight = FontWeight.SemiBold, color = BrownDark, fontSize = 15.sp)
@@ -81,11 +109,24 @@ fun NotificationsScreen(
                                         Text(n.date, color = TextSecondary, fontSize = 11.sp)
                                 }
                                 if (!n.isRead) {
-                                    Surface(
-                                        color = OrangePrimary,
-                                        shape = androidx.compose.foundation.shape.CircleShape
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Box(Modifier.size(10.dp))
+                                        Surface(
+                                            color = OrangePrimary,
+                                            shape = CircleShape
+                                        ) {
+                                            Box(Modifier.size(10.dp))
+                                        }
+
+                                        Spacer(Modifier.height(4.dp))
+
+                                        Text(
+                                            text = "Nuevo",
+                                            color = OrangePrimary,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
                                     }
                                 }
                             }

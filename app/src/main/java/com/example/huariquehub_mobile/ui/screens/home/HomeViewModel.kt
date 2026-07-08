@@ -14,8 +14,7 @@ import com.example.huariquehub_mobile.data.repository.HuariqueRepository
 import kotlinx.coroutines.launch
 
 
-// carga inicial de huariques y sugerencias
-// toggle para filtro de favoritos
+/** Carga huariques, sugerencias y permite filtrar por favoritos. */
 class HomeViewModel : ViewModel() {
 
     private val repo = HuariqueRepository()

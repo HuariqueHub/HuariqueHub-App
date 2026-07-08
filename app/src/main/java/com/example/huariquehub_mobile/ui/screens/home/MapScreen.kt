@@ -21,6 +21,10 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
+private const val DEFAULT_MAP_LAT = -12.0464
+private const val DEFAULT_MAP_LON = -77.0428
+private const val DEFAULT_MAP_ZOOM = 12.0
+
 /**
  * Mapa in-app con marcadores de huariques (US02).
  *
@@ -38,9 +42,12 @@ fun MapScreen(
     LaunchedEffect(Unit) {
         // Identificador requerido por osmdroid para descargar tiles de OSM.
         Configuration.getInstance().userAgentValue = context.packageName
+        if (viewModel.huariques.isEmpty()) viewModel.load()
     }
 
-    val located = viewModel.huariques.filter { it.latitude != 0.0 || it.longitude != 0.0 }
+    val located = remember(viewModel.huariques) {
+        viewModel.huariques.filter { it.latitude != 0.0 || it.longitude != 0.0 }
+    }
 
     Scaffold(
         topBar = {
@@ -69,10 +76,10 @@ fun MapScreen(
                             setTileSource(TileSourceFactory.MAPNIK)
                             setMultiTouchControls(true)
                             val start = located.firstOrNull()
-                            controller.setZoom(12.0)
+                            controller.setZoom(DEFAULT_MAP_ZOOM)
                             controller.setCenter(
                                 if (start != null) GeoPoint(start.latitude, start.longitude)
-                                else GeoPoint(-12.0464, -77.0428) // Lima
+                                else GeoPoint(DEFAULT_MAP_LAT, DEFAULT_MAP_LON)
                             )
                         }
                     },

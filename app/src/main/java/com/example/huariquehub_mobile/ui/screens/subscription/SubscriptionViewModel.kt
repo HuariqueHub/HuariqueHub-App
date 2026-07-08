@@ -40,7 +40,7 @@ class SubscriptionViewModel : ViewModel() {
                 val subResult = repo.getActiveSubscription(userId)
                 plansResult to subResult
             }.onSuccess { (p, s) ->
-                plans = p
+                plans = p.sortedBy { it.price }
                 activeSub = s
             }.onFailure { error = it.toUserMessage() }
             isLoading = false

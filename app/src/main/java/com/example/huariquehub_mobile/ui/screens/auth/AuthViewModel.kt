@@ -12,6 +12,7 @@ import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
+/** Gestiona login, registro y recuperación de contraseña (US16). */
 class AuthViewModel : ViewModel() {
 
     private val repo = AuthRepository()
@@ -85,6 +86,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    /** Limpia mensajes de error e informativos tras mostrarlos en pantalla. */
     fun clearError() {
         error = null
         message = null
