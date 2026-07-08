@@ -36,6 +36,7 @@ fun OwnerPromosScreen(
     }
 
     val ownerPromos = viewModel.promos
+    val activePromoCount = remember(ownerPromos) { ownerPromos.count { it.isActive } }
     var showDeleteDialog by remember { mutableStateOf<Promo?>(null) }
 
     Scaffold(
@@ -44,7 +45,7 @@ fun OwnerPromosScreen(
                 title = {
                     Column {
                         Text("Mis Promos", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = SurfaceColor)
-                        Text("${ownerPromos.size} activas", fontSize = 12.sp, color = SurfaceColor.copy(alpha = 0.8f))
+                        Text("$activePromoCount activas", fontSize = 12.sp, color = SurfaceColor.copy(alpha = 0.8f))
                     }
                 },
                 navigationIcon = {
@@ -79,7 +80,7 @@ fun OwnerPromosScreen(
                 contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 88.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(ownerPromos) { promo ->
+                items(ownerPromos, key = { it.id }) { promo ->
                     PromoCard(
                         promo = promo,
                         onEdit = { onEditPromo(promo.id) },

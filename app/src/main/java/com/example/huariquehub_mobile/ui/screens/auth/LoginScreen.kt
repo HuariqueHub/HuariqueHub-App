@@ -34,6 +34,15 @@ import com.example.huariquehub_mobile.ui.theme.*
 // validación de campos antes de llamar al backend
 private val LoginBackground = Color(0xFFD4E8A0)
 
+private fun validateLoginFields(email: String, password: String): String? {
+    return when {
+        email.isBlank() || password.isBlank() -> "Por favor completa todos los campos"
+        !email.contains("@") || !email.contains(".") -> "Ingresa un correo electrónico válido"
+        password.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
+        else -> null
+    }
+}
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: (UserSession) -> Unit,
@@ -168,11 +177,14 @@ fun LoginScreen(
                     // botón ingresar
                     Button(
                         onClick = {
-                            if (email.isBlank() || password.isBlank()) {
-                                validationError = "Por favor completa todos los campos"
+                            val cleanEmail = email.trim()
+                            val inputError = validateLoginFields(cleanEmail, password)
+
+                            if (inputError != null) {
+                                validationError = inputError
                             } else {
                                 validationError = ""
-                                viewModel.login(email, password) { onLoginSuccess(it) }
+                                viewModel.login(cleanEmail, password) { onLoginSuccess(it) }
                             }
                         },
                         modifier = Modifier

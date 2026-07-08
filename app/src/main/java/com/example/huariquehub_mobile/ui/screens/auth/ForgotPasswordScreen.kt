@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.ui.theme.*
 
+private const val MIN_PASSWORD_LENGTH = 6
+
 /**
  * Recuperación de contraseña (US16). El usuario ingresa su correo, recibe un
  * mensaje de confirmación y puede establecer una nueva contraseña.
@@ -29,6 +31,14 @@ fun ForgotPasswordScreen(
     var email by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var step by remember { mutableStateOf(1) } // 1 = solicitar, 2 = restablecer
+
+    LaunchedEffect(email, newPassword) { viewModel.clearError() }
+
+    val canSubmit = remember(email, newPassword, step, viewModel.isLoading) {
+        !viewModel.isLoading &&
+            email.isNotBlank() &&
+            (step == 1 || newPassword.length >= MIN_PASSWORD_LENGTH)
+    }
 
     Scaffold(
         topBar = {
@@ -93,14 +103,14 @@ fun ForgotPasswordScreen(
             Spacer(Modifier.height(20.dp))
             Button(
                 onClick = {
+                    val normalizedEmail = email.trim()
                     if (step == 1) {
-                        viewModel.forgotPassword(email) { step = 2 }
+                        viewModel.forgotPassword(normalizedEmail) { step = 2 }
                     } else {
-                        viewModel.resetPassword(email, newPassword) { }
+                        viewModel.resetPassword(normalizedEmail, newPassword) { }
                     }
                 },
-                enabled = !viewModel.isLoading && email.isNotBlank() &&
-                    (step == 1 || newPassword.length >= 6),
+                enabled = canSubmit,
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
             ) {

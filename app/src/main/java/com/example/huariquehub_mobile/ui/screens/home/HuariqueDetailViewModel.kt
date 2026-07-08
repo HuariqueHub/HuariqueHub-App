@@ -55,6 +55,7 @@ class HuariqueDetailViewModel : ViewModel() {
             loadFavoriteState(id)
             promos = runCatching { membershipRepo.getPromosByHuarique(id) }
                 .getOrDefault(emptyList())
+                .sortedWith(compareByDescending<Promo> { it.isActive }.thenBy { it.title })
         }
     }
 
@@ -101,7 +102,7 @@ class HuariqueDetailViewModel : ViewModel() {
         val userId = SessionManager.userId ?: return
         viewModelScope.launch {
             isSubmitting = true
-            runCatching { repo.addReview(huariqueId, userId, rating, comment) }
+            runCatching { repo.addReview(huariqueId, userId, rating, comment.trim()) }
                 .onSuccess {
                     reviews = runCatching { repo.getReviews(huariqueId) }.getOrDefault(reviews + it)
                     onDone()
