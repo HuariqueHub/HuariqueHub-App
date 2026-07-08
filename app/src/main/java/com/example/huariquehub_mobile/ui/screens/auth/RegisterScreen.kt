@@ -41,6 +41,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf("") }
 
     val isLoading = viewModel.isLoading
@@ -215,7 +216,24 @@ fun RegisterScreen(
                                 tint = OrangePrimary
                             )
                         },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (confirmPasswordVisible) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = null,
+                                    tint = TextSecondary
+                                )
+                            }
+                        },
+                        visualTransformation = if (confirmPasswordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
