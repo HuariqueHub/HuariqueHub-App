@@ -22,6 +22,7 @@ class AuthViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
 
+    /** Inicia sesión y guarda la sesión recibida para usar el token en próximas peticiones. */
     fun login(email: String, password: String, onSuccess: (UserSession) -> Unit) {
         viewModelScope.launch {
             isLoading = true
@@ -36,6 +37,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    /** Registra una cuenta nueva y actualiza la sesión si el backend responde correctamente. */
     fun register(
         name: String,
         email: String,
