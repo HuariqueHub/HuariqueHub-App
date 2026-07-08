@@ -41,7 +41,8 @@ data class HuariqueDto(
     val closeAt: String?,
     val deliveryAvailable: Boolean?,
     val takeawayAvailable: Boolean?,
-    val dineInAvailable: Boolean?
+    val dineInAvailable: Boolean?,
+    val updatedAt: String?
 )
 
 data class CategoryDto(

@@ -171,9 +171,14 @@ class HuariqueRepository {
         price: Double,
         district: String,
         address: String?,
+        phone: String?,
         description: String?,
         ownerId: Int?,
-        imageUrl: String? = null
+        openAt: String?,
+        closeAt: String?,
+        deliveryAvailable: Boolean,
+        takeawayAvailable: Boolean,
+        dineInAvailable: Boolean
     ): Huarique = api.createHuarique(
         CreateHuariqueRequest(
             name = name,
@@ -182,9 +187,14 @@ class HuariqueRepository {
             price = price,
             district = district,
             address = address,
+            phone = phone,
             description = description,
             ownerId = ownerId,
-            imageUrl = imageUrl
+            openAt = openAt,
+            closeAt = closeAt,
+            deliveryAvailable = deliveryAvailable,
+            takeawayAvailable = takeawayAvailable,
+            dineInAvailable = dineInAvailable
         )
     ).toModel()
 

@@ -80,6 +80,8 @@ fun CreateEditHuariqueScreen(
             address = it.address
             phone = it.phone
             price = if (it.price > 0) "%.0f".format(it.price) else ""
+            openAt = it.openAt ?: ""
+            closeAt = it.closeAt ?: ""
             description = it.description
             delivery = it.deliveryAvailable
             takeaway = it.takeawayAvailable
@@ -331,8 +333,14 @@ fun CreateEditHuariqueScreen(
                                 category = category,
                                 district = district,
                                 address = address,
+                                phone = phone,
                                 priceText = price,
+                                openAt = openAt,
+                                closeAt = closeAt,
                                 description = description,
+                                delivery = delivery,
+                                takeaway = takeaway,
+                                dineIn = dineIn,
                                 imageBytes = selectedImageBytes,
                                 imageMime = selectedImageMime
                             ) { onSave() }

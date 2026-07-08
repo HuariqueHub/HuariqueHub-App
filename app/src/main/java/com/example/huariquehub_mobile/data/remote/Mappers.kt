@@ -35,7 +35,8 @@ fun HuariqueDto.toModel(): Huarique = Huarique(
     hours = formatHours(openAt, closeAt),
     price = (price ?: 0.0).toFloat(),
     imageUrl = if (!imageUrl.isNullOrBlank()) imageUrl!!
-    else "${ApiClient.BASE_URL}huariques/$id/image",
+    else "${ApiClient.BASE_URL}huariques/$id/image" +
+            (updatedAt?.let { "?v=${it.hashCode()}" } ?: ""),
     isFavorite = false,
     latitude = latitude ?: 0.0,
     longitude = longitude ?: 0.0,

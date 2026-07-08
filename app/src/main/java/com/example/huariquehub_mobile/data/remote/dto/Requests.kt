@@ -24,7 +24,12 @@ data class CreateHuariqueRequest(
     val phone: String? = null,
     val description: String? = null,
     val ownerId: Int? = null,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val openAt: String? = null,
+    val closeAt: String? = null,
+    val deliveryAvailable: Boolean? = null,
+    val takeawayAvailable: Boolean? = null,
+    val dineInAvailable: Boolean? = null
 )
 
 data class CreateReviewRequest(

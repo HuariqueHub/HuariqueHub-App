@@ -55,8 +55,14 @@ class CreateEditHuariqueViewModel : ViewModel() {
         category: String,
         district: String,
         address: String,
+        phone: String,
         priceText: String,
+        openAt: String,
+        closeAt: String,
         description: String,
+        delivery: Boolean,
+        takeaway: Boolean,
+        dineIn: Boolean,
         imageBytes: ByteArray?,
         imageMime: String?,
         onDone: () -> Unit
@@ -67,7 +73,6 @@ class CreateEditHuariqueViewModel : ViewModel() {
             val price = priceText.replace(",", ".").toDoubleOrNull() ?: 0.0
             val categoryId = categoryIds[category] ?: fallbackCategories[category] ?: 0
             runCatching {
-                // Paso 1: crear o actualizar el huarique y obtener su id.
                 val huariqueId = if (id == null) {
                     val created = repo.createHuarique(
                         name = name,
@@ -76,8 +81,14 @@ class CreateEditHuariqueViewModel : ViewModel() {
                         price = price,
                         district = district,
                         address = address.ifBlank { null },
+                        phone = phone.ifBlank { null },
                         description = description.ifBlank { null },
-                        ownerId = SessionManager.userId
+                        ownerId = SessionManager.userId,
+                        openAt = openAt.ifBlank { null },
+                        closeAt = closeAt.ifBlank { null },
+                        deliveryAvailable = delivery,
+                        takeawayAvailable = takeaway,
+                        dineInAvailable = dineIn
                     )
                     created.id
                 } else {
@@ -86,14 +97,20 @@ class CreateEditHuariqueViewModel : ViewModel() {
                         "category" to category,
                         "categoryId" to categoryId,
                         "district" to district,
-                        "price" to price
+                        "price" to price,
+                        "phone" to phone.ifBlank { null },
+                        "address" to address.ifBlank { null },
+                        "description" to description.ifBlank { null },
+                        "openAt" to openAt.ifBlank { null },
+                        "closeAt" to closeAt.ifBlank { null },
+                        "deliveryAvailable" to delivery,
+                        "takeawayAvailable" to takeaway,
+                        "dineInAvailable" to dineIn
                     )
-                    if (address.isNotBlank()) patch["address"] = address
-                    if (description.isNotBlank()) patch["description"] = description
                     repo.updateHuarique(id, patch)
                     id
                 }
-                // Paso 2: si el dueño eligió foto, la sube al endpoint de imagen.
+                // Sube la foto solo si el dueño eligió una nueva.
                 if (imageBytes != null) {
                     repo.uploadHuariqueImage(huariqueId, imageBytes, imageMime ?: "image/jpeg")
                 }
