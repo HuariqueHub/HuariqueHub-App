@@ -28,25 +28,49 @@ fun NotificationsScreen(
     onBack: () -> Unit,
     viewModel: NotificationsViewModel = viewModel()
 ) {
-    LaunchedEffect(Unit) { viewModel.load() }
+    LaunchedEffect(Unit) {
+        viewModel.load()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis notificaciones", color = SurfaceColor) },
+                title = {
+                    val unreadCount = viewModel.unreadCount
+
+                    Text(
+                        text = if (unreadCount > 0) {
+                            "Mis notificaciones ($unreadCount)"
+                        } else {
+                            "Mis notificaciones"
+                        },
+                        color = SurfaceColor
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = SurfaceColor)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = SurfaceColor
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = OrangePrimary)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = OrangePrimary
+                )
             )
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding).padding(top = 8.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(top = 8.dp)
+        ) {
             viewModel.error?.let { message ->
                 Text(
-                    message,
+                    text = message,
                     color = ErrorRed,
                     fontSize = 13.sp,
                     modifier = Modifier
@@ -54,18 +78,28 @@ fun NotificationsScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
-            when {
-                viewModel.isLoading && viewModel.notifications.isEmpty() ->
-                    CircularProgressIndicator(color = OrangePrimary, modifier = Modifier.align(Alignment.Center))
 
-                viewModel.notifications.isEmpty() ->
+            when {
+                viewModel.isLoading && viewModel.notifications.isEmpty() -> {
+                    CircularProgressIndicator(
+                        color = OrangePrimary,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                viewModel.notifications.isEmpty() -> {
                     Column(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(horizontal = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("🔔", fontSize = 44.sp)
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Sin notificaciones",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(44.dp)
+                        )
 
                         Spacer(Modifier.height(8.dp))
 
@@ -84,49 +118,86 @@ fun NotificationsScreen(
                             fontSize = 13.sp
                         )
                     }
+                }
 
-                else -> LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(viewModel.notifications, key = { it.id }) { n ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { if (!n.isRead) viewModel.markAsRead(n.id) },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (n.isRead) SurfaceColor else OrangeLight
-                            )
-                        ) {
-                            Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Notifications, "Notificación", tint = OrangePrimary)
-                                Spacer(Modifier.width(12.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(n.title, fontWeight = FontWeight.SemiBold, color = BrownDark, fontSize = 15.sp)
-                                    Text(n.body, color = TextSecondary, fontSize = 13.sp)
-                                    if (n.date.isNotBlank())
-                                        Text(n.date, color = TextSecondary, fontSize = 11.sp)
-                                }
-                                if (!n.isRead) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Surface(
-                                            color = OrangePrimary,
-                                            shape = CircleShape
-                                        ) {
-                                            Box(Modifier.size(10.dp))
+                else -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(viewModel.notifications, key = { it.id }) { n ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (!n.isRead) {
+                                            viewModel.markAsRead(n.id)
                                         }
+                                    },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (n.isRead) {
+                                        SurfaceColor
+                                    } else {
+                                        OrangeLight
+                                    }
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = "Notificación",
+                                        tint = OrangePrimary
+                                    )
 
-                                        Spacer(Modifier.height(4.dp))
+                                    Spacer(Modifier.width(12.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = n.title,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = BrownDark,
+                                            fontSize = 15.sp
+                                        )
 
                                         Text(
-                                            text = "Nuevo",
-                                            color = OrangePrimary,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.SemiBold
+                                            text = n.body,
+                                            color = TextSecondary,
+                                            fontSize = 13.sp
                                         )
+
+                                        if (n.date.isNotBlank()) {
+                                            Text(
+                                                text = n.date,
+                                                color = TextSecondary,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
+
+                                    if (!n.isRead) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Surface(
+                                                color = OrangePrimary,
+                                                shape = CircleShape
+                                            ) {
+                                                Box(Modifier.size(10.dp))
+                                            }
+
+                                            Spacer(Modifier.height(4.dp))
+
+                                            Text(
+                                                text = "Nuevo",
+                                                color = OrangePrimary,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
                                     }
                                 }
                             }
