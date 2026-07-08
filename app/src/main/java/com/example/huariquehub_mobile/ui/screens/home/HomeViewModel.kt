@@ -51,6 +51,11 @@ class HomeViewModel : ViewModel() {
         load()
     }
 
+    /**
+     * Carga la información principal del Home.
+     * Si el filtro "Cerca de mí" está activo, trae huariques cercanos.
+     * Caso contrario, carga la lista general de huariques.
+     */
     fun load() {
         viewModelScope.launch {
             isLoading = true
@@ -74,6 +79,9 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Obtiene los favoritos del usuario actual para marcar los huariques guardados.
+     */
     private fun loadFavorites() {
         val userId = SessionManager.userId ?: return
 
@@ -86,6 +94,9 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Carga sugerencias personalizadas según el usuario autenticado.
+     */
     private fun loadSuggestions() {
         val userId = SessionManager.userId ?: return
 
@@ -109,7 +120,9 @@ class HomeViewModel : ViewModel() {
         favoritesOnly = !favoritesOnly
     }
 
-    /** Limpia los filtros rápidos de la pantalla principal. */
+    /**
+     * Restablece los filtros rápidos del Home y recarga la lista si era necesario.
+     */
     fun clearFilters() {
         val shouldReload = nearbyOnly
 
