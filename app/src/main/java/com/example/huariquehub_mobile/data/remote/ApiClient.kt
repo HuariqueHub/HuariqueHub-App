@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  */
 object ApiClient {
 
-    private const val BASE_URL = "https://huariquehub-backend.up.railway.app/"
+    const val BASE_URL = "https://huariquehub-backend.up.railway.app/"
 
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())

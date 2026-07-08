@@ -21,6 +21,8 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.huariquehub_mobile.data.model.Huarique
 import com.example.huariquehub_mobile.ui.theme.*
+import androidx.compose.ui.draw.clip
+import com.example.huariquehub_mobile.ui.components.HuariqueImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -256,16 +258,15 @@ private fun OwnerHuariqueCard(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icono categoría
-            Box(
+            // Foto del huarique
+            HuariqueImage(
+                name = huarique.name,
+                url = huarique.imageUrl,
                 modifier = Modifier
                     .size(52.dp)
-                    .background(OrangeLight, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("🍽️", fontSize = 24.sp)
-            }
-
+                    .clip(RoundedCornerShape(12.dp)),
+                emojiSize = 24.sp
+            )
             Spacer(modifier = Modifier.width(12.dp))
 
             // Info

@@ -18,6 +18,7 @@ import com.example.huariquehub_mobile.data.remote.dto.PromoDto
 import com.example.huariquehub_mobile.data.remote.dto.ReceiptDto
 import com.example.huariquehub_mobile.data.remote.dto.ReviewDto
 import com.example.huariquehub_mobile.data.remote.dto.SubscriptionDto
+import com.example.huariquehub_mobile.data.remote.ApiClient
 
 /** Convierte los DTOs del backend a los modelos de dominio usados por la UI. */
 
@@ -33,7 +34,8 @@ fun HuariqueDto.toModel(): Huarique = Huarique(
     phone = phone.orEmpty(),
     hours = formatHours(openAt, closeAt),
     price = (price ?: 0.0).toFloat(),
-    imageUrl = imageUrl.orEmpty(),
+    imageUrl = if (!imageUrl.isNullOrBlank()) imageUrl!!
+    else "${ApiClient.BASE_URL}huariques/$id/image",
     isFavorite = false,
     latitude = latitude ?: 0.0,
     longitude = longitude ?: 0.0,

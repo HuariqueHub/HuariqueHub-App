@@ -1,5 +1,8 @@
 package com.example.huariquehub_mobile.ui.screens.owner
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,11 +11,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,13 +48,28 @@ fun CreateEditHuariqueScreen(
     var openAt by remember { mutableStateOf("") }
     var closeAt by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
     var delivery by remember { mutableStateOf(false) }
     var takeaway by remember { mutableStateOf(false) }
     var dineIn by remember { mutableStateOf(true) }
     var validationError by remember { mutableStateOf("") }
     val isSaving = viewModel.isSaving
     val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
+
+    // Imagen elegida por el dueño (se guarda en memoria y se sube al publicar).
+    val context = LocalContext.current
+    var selectedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var selectedImageMime by remember { mutableStateOf<String?>(null) }
+    var selectedPreviewUri by remember { mutableStateOf<Uri?>(null) }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedPreviewUri = uri
+            selectedImageMime = context.contentResolver.getType(uri) ?: "image/jpeg"
+            selectedImageBytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        }
+    }
 
     // Prefill al cargar el huarique existente (modo edición).
     LaunchedEffect(existing) {
@@ -60,7 +81,6 @@ fun CreateEditHuariqueScreen(
             phone = it.phone
             price = if (it.price > 0) "%.0f".format(it.price) else ""
             description = it.description
-            imageUrl = it.imageUrl
             delivery = it.deliveryAvailable
             takeaway = it.takeawayAvailable
             dineIn = it.dineInAvailable
@@ -238,28 +258,42 @@ fun CreateEditHuariqueScreen(
             // Sección: Foto del local
             SectionLabel("Foto del local")
 
-            FormField(label = "URL de la imagen") {
-                OutlinedTextField(
-                    value = imageUrl,
-                    onValueChange = { imageUrl = it },
-                    placeholder = { Text("https://...") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = fieldColors()
+            OutlinedButton(
+                onClick = { pickImageLauncher.launch("image/*") },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Image, contentDescription = null, tint = OrangePrimary)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    if (selectedPreviewUri != null) "Cambiar foto" else "Seleccionar foto",
+                    color = OrangePrimary
                 )
             }
-            // Previsualización de la imagen que verán los exploradores.
-            HuariqueImage(
-                name = name.ifBlank { null },
-                url = imageUrl.ifBlank { null },
+
+            // Previsualización: la nueva foto elegida, o la actual en modo edición.
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                emojiSize = 44.sp
-            )
+                    .clip(RoundedCornerShape(12.dp))
+            ) {
+                if (selectedPreviewUri != null) {
+                    coil.compose.AsyncImage(
+                        model = selectedPreviewUri,
+                        contentDescription = "Foto seleccionada",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    HuariqueImage(
+                        name = name.ifBlank { null },
+                        url = if (isEditing) existing?.imageUrl else null,
+                        modifier = Modifier.fillMaxSize(),
+                        emojiSize = 44.sp
+                    )
+                }
+            }
 
             // Sección: Servicios
             SectionLabel("Servicios disponibles")
@@ -299,7 +333,8 @@ fun CreateEditHuariqueScreen(
                                 address = address,
                                 priceText = price,
                                 description = description,
-                                imageUrl = imageUrl
+                                imageBytes = selectedImageBytes,
+                                imageMime = selectedImageMime
                             ) { onSave() }
                         }
                     }

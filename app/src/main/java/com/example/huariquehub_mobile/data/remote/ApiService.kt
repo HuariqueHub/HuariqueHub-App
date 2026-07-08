@@ -3,6 +3,7 @@ package com.example.huariquehub_mobile.data.remote
 import com.example.huariquehub_mobile.data.remote.dto.*
 import retrofit2.Response
 import retrofit2.http.*
+import okhttp3.MultipartBody
 
 /**
  * Definición de los endpoints del backend de PuntoSabor desplegado en Railway.
@@ -62,6 +63,12 @@ interface ApiService {
     @DELETE("huariques/{id}")
     suspend fun deleteHuarique(@Path("id") id: Int): Response<Unit>
 
+    @Multipart
+    @POST("huariques/{id}/image")
+    suspend fun uploadHuariqueImage(
+        @Path("id") id: Int,
+        @Part file: MultipartBody.Part
+    ): HuariqueDto
     // ── Categories ──────────────────────────────────────────────────────────
     @GET("categories")
     suspend fun getCategories(): List<CategoryDto>

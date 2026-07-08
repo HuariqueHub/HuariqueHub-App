@@ -57,7 +57,8 @@ class CreateEditHuariqueViewModel : ViewModel() {
         address: String,
         priceText: String,
         description: String,
-        imageUrl: String,
+        imageBytes: ByteArray?,
+        imageMime: String?,
         onDone: () -> Unit
     ) {
         viewModelScope.launch {
@@ -66,8 +67,9 @@ class CreateEditHuariqueViewModel : ViewModel() {
             val price = priceText.replace(",", ".").toDoubleOrNull() ?: 0.0
             val categoryId = categoryIds[category] ?: fallbackCategories[category] ?: 0
             runCatching {
-                if (id == null) {
-                    repo.createHuarique(
+                // Paso 1: crear o actualizar el huarique y obtener su id.
+                val huariqueId = if (id == null) {
+                    val created = repo.createHuarique(
                         name = name,
                         category = category,
                         categoryId = categoryId,
@@ -75,9 +77,9 @@ class CreateEditHuariqueViewModel : ViewModel() {
                         district = district,
                         address = address.ifBlank { null },
                         description = description.ifBlank { null },
-                        ownerId = SessionManager.userId,
-                        imageUrl = imageUrl.trim().ifBlank { null }
+                        ownerId = SessionManager.userId
                     )
+                    created.id
                 } else {
                     val patch = mutableMapOf<String, Any?>(
                         "name" to name,
@@ -88,8 +90,12 @@ class CreateEditHuariqueViewModel : ViewModel() {
                     )
                     if (address.isNotBlank()) patch["address"] = address
                     if (description.isNotBlank()) patch["description"] = description
-                    if (imageUrl.isNotBlank()) patch["imageUrl"] = imageUrl.trim()
                     repo.updateHuarique(id, patch)
+                    id
+                }
+                // Paso 2: si el dueño eligió foto, la sube al endpoint de imagen.
+                if (imageBytes != null) {
+                    repo.uploadHuariqueImage(huariqueId, imageBytes, imageMime ?: "image/jpeg")
                 }
             }.onSuccess { onDone() }
                 .onFailure { error = it.toUserMessage() }

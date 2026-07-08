@@ -27,6 +27,9 @@ import com.example.huariquehub_mobile.data.model.AppNotification
 import com.example.huariquehub_mobile.data.model.Receipt
 import com.example.huariquehub_mobile.data.model.UserPreferences
 import com.example.huariquehub_mobile.data.remote.toModel
+import okhttp3.MultipartBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 private val api get() = ApiClient.api
 
@@ -195,6 +198,13 @@ class HuariqueRepository {
 
     suspend fun addReview(huariqueId: Int, userId: Int, rating: Int, comment: String): Review =
         api.createReview(CreateReviewRequest(huariqueId, userId, rating, comment)).toModel()
+
+    /** Sube la foto del huarique al backend (se guarda como bytes en la db). */
+    suspend fun uploadHuariqueImage(id: Int, bytes: ByteArray, mimeType: String): Huarique {
+        val body = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+        val part = MultipartBody.Part.createFormData("file", "huarique_$id", body)
+        return api.uploadHuariqueImage(id, part).toModel()
+    }
 }
 
 /**
