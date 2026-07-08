@@ -42,11 +42,8 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-<<<<<<< HEAD
-=======
     var acceptedTerms by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
->>>>>>> 82f53f5 (T&C)
     var validationError by remember { mutableStateOf("") }
 
     val isLoading = viewModel.isLoading
@@ -299,13 +296,8 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Valida los campos antes de enviar el registro al backend.
                     Button(
                         onClick = {
-<<<<<<< HEAD
-                            // Se eliminan espacios extra para evitar errores de registro.
-=======
->>>>>>> 82f53f5 (T&C)
                             val cleanName = name.trim()
                             val cleanEmail = email.trim()
 
@@ -329,12 +321,6 @@ fun RegisterScreen(
                                     validationError = "La contraseña debe tener al menos 8 caracteres"
                                 }
 
-<<<<<<< HEAD
-                                else -> {
-                                    validationError = ""
-
-                                    // La app móvil registra cuentas con rol de propietario.
-=======
                                 !acceptedTerms -> {
                                     validationError = "Debes aceptar los términos y condiciones"
                                 }
@@ -342,7 +328,6 @@ fun RegisterScreen(
                                 else -> {
                                     validationError = ""
 
->>>>>>> 82f53f5 (T&C)
                                     viewModel.register(
                                         cleanName,
                                         cleanEmail,
