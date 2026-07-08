@@ -240,8 +240,10 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Valida los campos antes de enviar el registro al backend.
                     Button(
                         onClick = {
+                            // Se eliminan espacios extra para evitar errores de registro.
                             val cleanName = name.trim()
                             val cleanEmail = email.trim()
 
@@ -268,6 +270,7 @@ fun RegisterScreen(
                                 else -> {
                                     validationError = ""
 
+                                    // La app móvil registra cuentas con rol de propietario.
                                     viewModel.register(
                                         cleanName,
                                         cleanEmail,
