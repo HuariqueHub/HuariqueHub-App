@@ -10,6 +10,7 @@ import com.example.huariquehub_mobile.data.remote.toUserMessage
 import com.example.huariquehub_mobile.data.repository.HuariqueRepository
 import kotlinx.coroutines.launch
 
+/** Gestiona los huariques del propietario en el panel principal. */
 class OwnerDashboardViewModel : ViewModel() {
 
     private val repo = HuariqueRepository()
@@ -21,6 +22,7 @@ class OwnerDashboardViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
 
+    /** Carga los huariques registrados por el propietario actual. */
     fun load(ownerId: Int) {
         viewModelScope.launch {
             isLoading = true
@@ -34,6 +36,7 @@ class OwnerDashboardViewModel : ViewModel() {
         }
     }
 
+    /** Elimina un huarique y actualiza la lista local si la petición fue exitosa. */
     fun delete(id: Int) {
         viewModelScope.launch {
             runCatching { repo.deleteHuarique(id) }
