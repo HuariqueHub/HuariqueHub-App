@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,7 +52,10 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var acceptedTerms by remember { mutableStateOf(false) }
+    var showTermsDialog by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf("") }
+
     val isLoading = viewModel.isLoading
     val errorMessage = validationError.ifBlank { viewModel.error.orEmpty() }
 
@@ -100,20 +102,33 @@ fun LoginScreen(
                         fontWeight = FontWeight.Bold,
                         color = BrownDark
                     )
+
                     Spacer(modifier = Modifier.height(4.dp))
+
                     Text(
                         text = "Bienvenido de vuelta",
                         fontSize = 14.sp,
                         color = TextSecondary
                     )
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // campo email
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it; validationError = ""; viewModel.clearError() },
+                        onValueChange = {
+                            email = it
+                            validationError = ""
+                            viewModel.clearError()
+                        },
                         label = { Text("Correo electrónico") },
-                        leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = OrangePrimary) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Email,
+                                contentDescription = null,
+                                tint = OrangePrimary
+                            )
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -130,19 +145,37 @@ fun LoginScreen(
                     // campo contraseña
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; validationError = ""; viewModel.clearError() },
+                        onValueChange = {
+                            password = it
+                            validationError = ""
+                            viewModel.clearError()
+                        },
                         label = { Text("Contraseña") },
-                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = OrangePrimary) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = OrangePrimary
+                            )
+                        },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
-                                    if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    imageVector = if (passwordVisible) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
                                     contentDescription = null,
                                     tint = TextSecondary
                                 )
                             }
                         },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        visualTransformation = if (passwordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -156,6 +189,7 @@ fun LoginScreen(
 
                     if (errorMessage.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
+
                         Text(
                             text = errorMessage,
                             color = ErrorRed,
@@ -165,11 +199,52 @@ fun LoginScreen(
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
+
                     TextButton(
                         onClick = onForgotPassword,
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("¿Olvidaste tu contraseña?", color = OrangePrimary, fontSize = 13.sp)
+                        Text(
+                            text = "¿Olvidaste tu contraseña?",
+                            color = OrangePrimary,
+                            fontSize = 13.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = acceptedTerms,
+                            onCheckedChange = {
+                                acceptedTerms = it
+                                validationError = ""
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = OrangePrimary
+                            )
+                        )
+
+                        Text(
+                            text = "Acepto los ",
+                            color = TextSecondary,
+                            fontSize = 13.sp
+                        )
+
+                        TextButton(
+                            onClick = { showTermsDialog = true },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                text = "términos y condiciones",
+                                color = OrangePrimary,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -180,11 +255,21 @@ fun LoginScreen(
                             val cleanEmail = email.trim()
                             val inputError = validateLoginFields(cleanEmail, password)
 
-                            if (inputError != null) {
-                                validationError = inputError
-                            } else {
-                                validationError = ""
-                                viewModel.login(cleanEmail, password) { onLoginSuccess(it) }
+                            when {
+                                inputError != null -> {
+                                    validationError = inputError
+                                }
+
+                                !acceptedTerms -> {
+                                    validationError = "Debes aceptar los términos y condiciones"
+                                }
+
+                                else -> {
+                                    validationError = ""
+                                    viewModel.login(cleanEmail, password) {
+                                        onLoginSuccess(it)
+                                    }
+                                }
                             }
                         },
                         modifier = Modifier
@@ -195,25 +280,78 @@ fun LoginScreen(
                         enabled = !isLoading
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = SurfaceColor, modifier = Modifier.size(20.dp))
+                            CircularProgressIndicator(
+                                color = SurfaceColor,
+                                modifier = Modifier.size(20.dp)
+                            )
                         } else {
-                            Text("Ingresar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = "Ingresar",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    )
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("¿No tienes cuenta? ", color = TextSecondary, fontSize = 14.sp)
-                        TextButton(onClick = onNavigateToRegister, contentPadding = PaddingValues(0.dp)) {
-                            Text("Regístrate", color = OrangePrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(
+                            text = "¿No tienes cuenta? ",
+                            color = TextSecondary,
+                            fontSize = 14.sp
+                        )
+
+                        TextButton(
+                            onClick = onNavigateToRegister,
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                text = "Regístrate",
+                                color = OrangePrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
                         }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        if (showTermsDialog) {
+            AlertDialog(
+                onDismissRequest = { showTermsDialog = false },
+                title = {
+                    Text(
+                        text = "Términos y condiciones",
+                        fontWeight = FontWeight.Bold,
+                        color = BrownDark
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Al iniciar sesión aceptas usar la aplicación de forma responsable, proporcionar información válida y respetar las normas de HuariqueHub. La información de la cuenta será utilizada únicamente para brindar acceso a las funcionalidades de la aplicación.",
+                        color = TextSecondary,
+                        fontSize = 14.sp
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showTermsDialog = false }) {
+                        Text(
+                            text = "Entendido",
+                            color = OrangePrimary
+                        )
+                    }
+                }
+            )
         }
     }
 }
