@@ -36,3 +36,11 @@ Aplicación móvil desarrollada en Kotlin con Android Studio y Jetpack Compose.
 - Favoritos
 - Perfil de usuario
 - Gestión de huariques y promociones
+
+## Notas de desarrollo
+
+La aplicación móvil consume los servicios del backend mediante Retrofit.
+
+Para probar cambios visuales o validaciones simples, se recomienda ejecutar la app en un emulador Android desde Android Studio.
+
+Antes de subir cambios, verificar que el proyecto compile correctamente y que la pantalla de inicio cargue sin errores.
